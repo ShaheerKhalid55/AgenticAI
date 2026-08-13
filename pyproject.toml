@@ -1,30 +1,16 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "hr-policy-assistant"
 version = "1.0.0"
 description = "HR Policy Assistant - FastAPI backend with HTML/JS frontend"
-requires-python = "==3.12.*"
+requires-python = ">=3.12,<3.13"
 
-dependencies = [
-    "fastapi[standard]",
-    "uvicorn[standard]",
-    "python-multipart",
-    "python-dotenv",
-    "pypdf",
-    "pymongo",
-    "qdrant-client",
-    "sentence-transformers",
-    "torch",
-    "langchain-core",
-    "langchain-text-splitters",
-    "langchain-qdrant",
-    "langchain-ollama",
-    "langchain-openai",
-    "langgraph",
-    "langgraph-checkpoint-mongodb",
-    "langmem",
-    "langchain-mcp-adapters",
-    "openai",
-]
+[tool.setuptools.packages.find]
+include = ["backend*"]
+exclude = ["frontend*"]
 
 [tool.fastapi]
 entrypoint = "backend.main:app"
