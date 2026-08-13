@@ -22,3 +22,6 @@ uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
 
 Hard refresh Chrome:
 Ctrl + Shift + R
+
+
+Deployment fix: disabled Qdrant startup collection validation embedding call and increased Mixedbread API retries for transient 5xx/503 responses.

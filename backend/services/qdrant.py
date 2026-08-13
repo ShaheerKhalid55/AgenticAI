@@ -58,6 +58,11 @@ class QdrantService:
             client=self.client,
             collection_name=POLICY_COLLECTION,
             embedding=self.embeddings,
+            # Do not call the embedding API with a dummy text just to validate
+            # the collection at construction time. The hosted embedding API
+            # can briefly return 503, and the collection is already known to
+            # be 1024-dimensional. Actual queries still validate at runtime.
+            validate_collection_config=False,
         )
         return store
 
@@ -73,5 +78,6 @@ class QdrantService:
             url=QDRANT_MEMORY_URL,
             api_key=QDRANT_API_KEY,
             collection_name=POLICY_COLLECTION,
+            validate_collection_config=False,
         )
         return store

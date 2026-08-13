@@ -5,7 +5,7 @@ python-dotenv
 pypdf
 pymongo
 qdrant-client
-mixedbread-ai
+mixedbread>=0.54.0
 langchain-core
 langchain-text-splitters
 langchain-qdrant

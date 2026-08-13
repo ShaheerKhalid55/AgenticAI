@@ -8,15 +8,7 @@ OLLAMA_CLOUD_HOST = os.getenv("OLLAMA_HOST", "https://ollama.com")
 OLLAMA_LLM_MODEL = os.getenv("OLLAMA_LLM_MODEL", "gemma4:cloud")
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-
-# Hosted Mixedbread embedding API. The model remains mxbai-embed-large-v1,
-# but no SentenceTransformer/PyTorch model is loaded into this FastAPI process.
 MIXEDBREAD_API_KEY = os.getenv("MIXEDBREAD_API_KEY")
-MEMORY_EMBEDDING_MODEL = os.getenv(
-    "MEMORY_EMBEDDING_MODEL",
-    "mixedbread-ai/mxbai-embed-large-v1",
-)
-MEMORY_EMBEDDING_DIMS = int(os.getenv("MEMORY_EMBEDDING_DIMS", "1024"))
 
 MONGODB_URI = os.getenv("MONGODB_URI", "mongodb://localhost:27017")
 MONGODB_DB_NAME = os.getenv("MONGODB_DB_NAME", "hr_agent_checkpoints")
@@ -30,13 +22,13 @@ QDRANT_MEMORY_COLLECTION = os.getenv(
 )
 POLICY_COLLECTION = os.getenv("POLICY_COLLECTION", "policy_app_agent_mxbai")
 
+MEMORY_EMBEDDING_MODEL = "mixedbread-ai/mxbai-embed-large-v1"
+MEMORY_EMBEDDING_DIMS = 1024
 MAX_NAMESPACE_DEPTH = 8
 
 CORS_ORIGINS = [
-    x.strip()
-    for x in os.getenv(
+    x.strip() for x in os.getenv(
         "CORS_ORIGINS",
         "http://localhost:5500,http://127.0.0.1:5500,http://localhost:8000",
-    ).split(",")
-    if x.strip()
+    ).split(",") if x.strip()
 ]
