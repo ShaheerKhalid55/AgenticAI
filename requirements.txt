@@ -5,8 +5,7 @@ python-dotenv
 pypdf
 pymongo
 qdrant-client
-sentence-transformers
-torch
+mixedbread-ai
 langchain-core
 langchain-text-splitters
 langchain-qdrant

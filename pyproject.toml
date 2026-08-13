@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hr-policy-assistant"
-version = "1.0.0"
-description = "HR Policy Assistant - FastAPI backend with HTML/JS frontend"
+version = "1.1.0"
+description = "HR Policy Assistant - FastAPI backend with HTML/JS frontend and hosted Mixedbread embeddings"
 requires-python = ">=3.12,<3.13"
 
 dependencies = [
@@ -16,8 +16,7 @@ dependencies = [
     "pypdf",
     "pymongo",
     "qdrant-client",
-    "sentence-transformers",
-    "torch",
+    "mixedbread-ai",
     "langchain-core",
     "langchain-text-splitters",
     "langchain-qdrant",
