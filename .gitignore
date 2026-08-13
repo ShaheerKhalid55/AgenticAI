@@ -1,8 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
 venv/
 .venv/
-__pycache__/
-*.pyc
+env/
+
+# Environment / secrets
 .env
-*.log
-.idea/
+.env.*
+!.env.example
+
+# IDE
 .vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# FastAPI Cloud local configuration
+.fastapicloud/
+
+# Build/cache
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
