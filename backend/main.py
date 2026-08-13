@@ -10,6 +10,7 @@ from .services.mongo import MongoService
 from .services.qdrant import QdrantService
 from .services.voice import VoiceService
 from .agent.graph import AgentService
+from importlib.resources import files
 
 from .api import chat, sessions, documents, voice, health
 
@@ -54,6 +55,10 @@ app.include_router(documents.router)
 app.include_router(voice.router)
 app.include_router(health.router)
 
-frontend = Path(__file__).resolve().parent.parent / "frontend"
-if frontend.exists():
-    app.mount("/", StaticFiles(directory=frontend, html=True), name="frontend")
+frontend = files("frontend")
+
+app.mount(
+    "/",
+    StaticFiles(directory=str(frontend), html=True),
+    name="frontend"
+)

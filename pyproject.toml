@@ -31,8 +31,14 @@ dependencies = [
 ]
 
 [tool.setuptools.packages.find]
-include = ["backend*"]
-exclude = ["frontend*"]
+include = ["backend*", "frontend*"]
+
+[tool.setuptools.package-data]
+frontend = [
+    "*.html",
+    "css/*",
+    "js/*"
+]
 
 [tool.fastapi]
 entrypoint = "backend.main:app"
