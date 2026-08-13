@@ -1,0 +1,24 @@
+HR Policy Assistant - Frontend Changes
+
+Included:
+1. Recent chats now use chat/message SVG icons instead of the old circle.
+2. Recent chat titles are bold/dark.
+3. Recent chat dates/subtitles are smaller and light gray.
+4. Active recent chat has the light blue design from the reference.
+5. Recent chat hover and dark-mode states are included.
+6. Light/dark theme button is functional and persists in localStorage.
+7. Sun/moon SVG icons switch with the selected theme.
+8. Added dark-mode styling for sidebar, chat, cards, composer and footer.
+9. JavaScript initialization checks elements before addEventListener to prevent
+   "Cannot read properties of null" errors.
+10. Existing chat, session, PDF upload, attachment and voice-input functionality
+    is retained.
+
+Replace the frontend folder in your FastAPI project with the included frontend
+folder.
+
+Then restart:
+uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
+
+Hard refresh Chrome:
+Ctrl + Shift + R

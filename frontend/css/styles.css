@@ -1,0 +1,777 @@
+*{box-sizing:border-box}
+:root{
+  --navy:#101e3b;--blue:#1769e8;--teal:#22a6a3;--green:#16b86a;
+  --text:#18243d;--muted:#6c7890;--line:#e6ebf2;--soft:#f7f9fc;
+}
+html,body{height:100%;margin:0}
+body{
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  color:var(--text);background:#fff
+}
+button,textarea{font:inherit}
+button{cursor:pointer}
+.app{height:100vh;overflow:hidden;background:#fff}
+.topbar{
+  height:88px;border-bottom:1px solid var(--line);display:flex;align-items:center;
+  gap:22px;padding:0 26px 0 20px;background:#fff;
+  justify-content:space-between
+}
+.brand{display:flex;align-items:center;gap:12px;min-width:330px}
+.brand-mark{width:48px;height:48px;display:grid;place-items:center}
+.brand-mark svg{width:48px;height:48px}
+.brand-title{font-size:20px;font-weight:780;letter-spacing:-.35px}
+.brand-subtitle{font-size:13px;color:var(--muted);margin-top:2px}
+.status-tabs{display:flex;align-items:center;gap:10px;flex:1;justify-content:center}
+.status-card{
+  height:58px;min-width:150px;padding:9px 13px;border:1px solid var(--line);
+  border-radius:13px;display:flex;align-items:center;gap:10px;
+  box-shadow:0 2px 10px rgba(20,37,70,.04);background:#fff
+}
+.status-icon{width:25px;height:25px;display:grid;place-items:center;color:#586780}
+.status-icon svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.status-card span:last-child{display:flex;flex-direction:column;gap:4px}
+.status-card b{font-size:12px;font-weight:600;white-space:nowrap}
+.status-card small{font-size:11px;color:#159b5d;font-weight:650;white-space:nowrap}
+.status-card small i,.capability span i{
+  display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:5px
+}
+.status-card small strong{font-weight:650;color:#1d2c46}
+.avatar{position:relative;border-radius:50%;display:grid;place-items:center;background:var(--navy);color:#fff;font-weight:700}
+.top-avatar{width:46px;height:46px;font-size:13px;flex:none}
+.online{position:absolute;width:10px;height:10px;border-radius:50%;background:#18b96a;border:2px solid #fff;right:-1px;bottom:0}
+.layout{height:calc(100vh - 88px);display:flex}
+.sidebar{
+  width:348px;min-width:300px;border-right:1px solid var(--line);padding:20px;
+  display:flex;flex-direction:column;background:#fff
+}
+.new-chat,.upload-docs{
+  height:43px;width:100%;border-radius:9px;display:flex;align-items:center;justify-content:center;
+  gap:9px;font-size:15px;font-weight:700
+}
+.new-chat{background:var(--navy);color:#fff;border:1px solid var(--navy)}
+.upload-docs{margin-top:13px;background:#fff;color:#263652;border:1px solid #ccd5e3}
+.new-chat svg,.upload-docs svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.recent-heading{display:flex;justify-content:space-between;align-items:center;margin:36px 0 10px;font-size:14px}
+.recent-heading>div{display:flex;gap:4px}
+.recent-heading button{width:28px;height:28px;border:0;background:transparent;color:#4e5c75;display:grid;place-items:center}
+.recent-heading svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+.recent-chats{flex:1;overflow:auto;padding-right:2px}
+.main{flex:1;min-width:0;height:100%;display:flex;flex-direction:column;background:#fff}
+.hero{display:flex;align-items:center;gap:18px;padding:20px 36px 11px}
+.hero-logo{width:76px;height:76px;border-radius:50%;display:grid;place-items:center;border:1px solid #bfd5ff}
+.hero-logo svg{width:58px;height:58px}
+.hero h1{margin:0;font-size:29px;letter-spacing:-.65px}
+.hero p{margin:5px 0 0;color:var(--muted);font-size:14px}
+.capabilities{
+  display:grid;grid-template-columns:repeat(5,minmax(145px,1fr));gap:14px;
+  padding:0 36px 10px
+}
+.capability{
+  min-height:78px;border:1px solid var(--line);border-radius:12px;padding:13px 14px;
+  display:flex;align-items:center;gap:11px;box-shadow:0 2px 10px rgba(20,37,70,.035)
+}
+.capability-icon{
+  width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-size:24px;font-weight:700
+}
+.books{color:#4057e9;background:#edf0ff}.memory{color:#15aaa8;background:#e9fbfa}
+.brain{color:#e85b8d;background:#fff0f5}.globe{color:#2377c9;background:#edf7ff}.mic{color:#487ee9;background:#eff4ff}
+.capability>div:last-child{display:flex;flex-direction:column;gap:5px}
+.capability b{font-size:12px;font-weight:600;color:#637089}
+.capability span{font-size:12px;font-weight:650;color:#17995c}
+.capability span:last-child{color:#34415a}
+.chat{flex:1;overflow:auto;padding:2px 36px 15px}
+.message{width:min(1120px,100%);margin:12px auto;display:flex;gap:13px}
+.message .bot-icon{
+  width:40px;height:40px;flex:0 0 40px;border-radius:50%;border:1px solid #d2e0ff;
+  background:#f4f8ff;display:grid;place-items:center
+}
+.message .bot-icon svg{width:27px;height:27px}
+.message .bubble{
+  max-width:100%;padding:15px 20px;border:1px solid var(--line);border-radius:14px;
+  background:#fff;line-height:1.62;font-size:14px;box-shadow:0 2px 10px rgba(20,37,70,.025);
+  white-space:pre-wrap
+}
+.message.user{justify-content:flex-end}
+.message.user .user-avatar{order:2}
+.message.user .bubble{max-width:88%;background:#eef5ff;border-color:#d1e1ff}
+.user-avatar{width:42px;height:42px;flex:0 0 42px;font-size:13px}
+.message-meta{text-align:right;color:#7c8798;font-size:10px;margin-top:7px}
+.working{width:min(1120px,calc(100% - 72px));margin:0 auto 6px;color:var(--muted);font-size:12px}
+.hidden{display:none}
+.composer{
+  width:min(1160px,calc(100% - 72px));min-height:58px;margin:6px auto 0;
+  padding:7px 8px 7px 19px;border:1px solid #dbe2eb;border-radius:29px;
+  display:flex;align-items:center;gap:8px;background:#fff;box-shadow:0 3px 16px rgba(20,37,70,.05)
+}
+.composer textarea{
+  flex:1;min-width:0;border:0;outline:0;resize:none;background:transparent;
+  color:var(--text);font-size:14px;line-height:1.4;padding:9px 0;max-height:110px
+}
+.composer textarea::placeholder{color:#8b96a9}
+.composer-actions{display:flex;align-items:center;gap:3px}
+.icon-button{
+  width:39px;height:39px;border:0;border-radius:50%;display:grid;place-items:center;
+  background:transparent;color:#17345e
+}
+.icon-button:hover{background:#f3f6fa}
+.icon-button svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.send-button{
+  width:43px;height:43px;border:0;border-radius:50%;display:grid;place-items:center;
+  color:#fff;background:var(--navy)
+}
+.send-button svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
+.disclaimer{text-align:center;color:#8791a2;font-size:10px;padding:8px 20px 9px}
+@media(max-width:1250px){
+  .status-card{min-width:130px}.status-card b{font-size:11px}.capabilities{gap:9px}.sidebar{width:320px}
+}
+@media(max-width:1050px){
+  .status-tabs{display:none}.brand{flex:1}.capabilities{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:760px){
+  .topbar{height:74px;padding:0 14px}.layout{height:calc(100vh - 74px)}
+  .sidebar{display:none}.hero{padding:16px}.capabilities{grid-template-columns:1fr 1fr;padding:0 16px 8px}
+  .chat{padding:2px 12px 10px}.composer{width:calc(100% - 24px)}
+  .hero-logo{width:58px;height:58px}.hero-logo svg{width:45px;height:45px}.hero h1{font-size:23px}.hero p{font-size:12px}
+}
+
+
+
+/* =========================================================
+   EMPLOYEE FOOTER
+   ========================================================= */
+
+.employee {
+    flex: 0 0 auto;
+
+    width: 100%;
+    min-height: 82px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 12px 20px;
+
+    border-top: 1px solid #e5eaf2;
+
+    background: #ffffff;
+}
+
+.employee-avatar {
+    position: relative;
+
+    width: 46px;
+    height: 46px;
+
+    flex: 0 0 46px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #101e3b;
+
+    color: #ffffff;
+
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.employee-avatar .online {
+    position: absolute;
+
+    width: 9px;
+    height: 9px;
+
+    right: -1px;
+    bottom: 1px;
+
+    border-radius: 50%;
+
+    background: #19b66b;
+
+    border: 2px solid #ffffff;
+}
+
+.employee-copy {
+    min-width: 0;
+    flex: 1;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 3px;
+}
+
+.employee-copy b {
+    color: #17233c;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    line-height: 1.3;
+}
+
+.employee-copy span {
+    color: #7b879a;
+
+    font-size: 11px;
+    font-weight: 400;
+
+    line-height: 1.3;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chevron {
+    width: 30px;
+    height: 30px;
+
+    flex: 0 0 30px;
+
+    border: 0;
+    background: transparent;
+
+    color: #52627c;
+
+    font-size: 18px;
+
+    cursor: pointer;
+}
+
+.chevron:hover {
+    background: #f1f4f8;
+
+    border-radius: 7px;
+}
+
+/* =========================================================
+   FINAL RECENT CHAT ICON FIX
+   ========================================================= */
+
+.session::before,
+.session::after {
+    content: none !important;
+    display: none !important;
+}
+
+.session {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.session-icon {
+    width: 28px !important;
+    height: 28px !important;
+
+    min-width: 28px !important;
+    min-height: 28px !important;
+
+    flex: 0 0 28px !important;
+
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+
+    color: #52627c;
+
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+}
+
+.session-icon svg {
+    width: 22px !important;
+    height: 22px !important;
+
+    display: block !important;
+
+    fill: none !important;
+
+    stroke: currentColor !important;
+    stroke-width: 1.7 !important;
+
+    stroke-linecap: round !important;
+    stroke-linejoin: round !important;
+}
+
+.session.active .session-icon {
+    color: #1769e8;
+}
+
+.session:hover .session-icon {
+    color: #1769e8;
+}
+
+/* =========================================================
+   THEME BUTTON — FIXED FOOTER POSITION
+   ========================================================= */
+
+.theme-button {
+    width: 38px !important;
+    height: 38px !important;
+
+    min-width: 38px !important;
+    min-height: 38px !important;
+
+    flex: 0 0 38px !important;
+
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+
+    margin-left: 2px;
+
+    padding: 0 !important;
+
+    border: 0 !important;
+
+    border-radius: 50% !important;
+
+    background: #f4f6fa !important;
+
+    color: #52627c;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.theme-button:hover {
+    background: #e9edf4 !important;
+
+    color: #17233c;
+
+    transform: rotate(8deg);
+}
+
+.theme-button svg {
+    width: 20px !important;
+    height: 20px !important;
+
+    display: block;
+
+    fill: none;
+
+    stroke: currentColor;
+
+    stroke-width: 1.7;
+
+    stroke-linecap: round;
+
+    stroke-linejoin: round;
+}
+
+.theme-button .sun-icon {
+    display: block;
+}
+
+.theme-button .moon-icon {
+    display: none;
+}
+
+body.dark .theme-button .sun-icon {
+    display: none;
+}
+
+body.dark .theme-button .moon-icon {
+    display: block;
+}
+
+body.dark .theme-button {
+    background: #1a2940 !important;
+    color: #f5c85b;
+}
+
+
+/* =========================================================
+   FINAL UI FIXES - RECENT CHATS + THEME
+   ========================================================= */
+
+/* Remove the old circle/pseudo-element chat marker */
+.session::before,
+.session::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* Recent chat item */
+.session {
+  position: relative;
+  width: 100%;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  margin: 3px 0;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  transition: background .18s ease, border-color .18s ease, color .18s ease;
+}
+
+.session:hover {
+  background: #f7f9fc;
+}
+
+.session.active {
+  background: #f0f6ff;
+  border-color: #cfe0ff;
+}
+
+.session.active:hover {
+  background: #edf5ff;
+}
+
+/* Actual SVG chat icon generated by app.js */
+.session-icon {
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+  min-height: 28px !important;
+  flex: 0 0 28px !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  color: #52627c;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+}
+
+.session-icon svg {
+  width: 22px !important;
+  height: 22px !important;
+  display: block !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 1.7 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+}
+
+.session.active .session-icon,
+.session:hover .session-icon {
+  color: #1769e8;
+}
+
+/* Recent chat title/date */
+.session-copy {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.session-copy b {
+  display: block;
+  color: #17233c;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session-copy span {
+  display: block;
+  color: #7a869b;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+.session.active .session-copy b {
+  color: #1769e8;
+}
+
+.session.active .session-copy span {
+  color: #71809a;
+}
+
+/* Employee footer - keep theme button visible */
+.employee {
+  flex: 0 0 auto;
+  width: 100%;
+  min-height: 82px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border-top: 1px solid #e5eaf2;
+  background: #fff;
+}
+
+.employee-copy {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.employee-copy b {
+  color: #17233c;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.employee-copy span {
+  color: #7b879a;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chevron {
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  flex: 0 0 30px;
+  border: 0;
+  background: transparent;
+  color: #52627c;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.chevron:hover {
+  background: #f1f4f8;
+  border-radius: 7px;
+}
+
+/* Theme button */
+.theme-button {
+  width: 38px !important;
+  height: 38px !important;
+  min-width: 38px !important;
+  min-height: 38px !important;
+  flex: 0 0 38px !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  margin-left: 2px;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  background: #f4f6fa !important;
+  color: #52627c;
+  cursor: pointer;
+  transition: background .2s ease, color .2s ease, transform .2s ease;
+}
+
+.theme-button:hover {
+  background: #e9edf4 !important;
+  color: #17233c;
+  transform: rotate(8deg);
+}
+
+.theme-button svg {
+  width: 20px !important;
+  height: 20px !important;
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.theme-button .sun-icon {
+  display: block;
+}
+
+.theme-button .moon-icon {
+  display: none;
+}
+
+body.dark .theme-button .sun-icon {
+  display: none;
+}
+
+body.dark .theme-button .moon-icon {
+  display: block;
+}
+
+body.dark .theme-button {
+  background: #1a2940 !important;
+  color: #f5c85b;
+}
+
+/* Dark mode recent chats */
+body.dark .session:hover {
+  background: #17233a;
+}
+
+body.dark .session.active {
+  background: #172d50;
+  border-color: #294d82;
+}
+
+body.dark .session-copy b {
+  color: #edf3ff;
+}
+
+body.dark .session-copy span {
+  color: #9aa8bd;
+}
+
+body.dark .session.active .session-copy b {
+  color: #76aaff;
+}
+
+body.dark .session-icon {
+  color: #9aa8bd;
+}
+
+body.dark .session.active .session-icon,
+body.dark .session:hover .session-icon {
+  color: #76aaff;
+}
+
+body.dark .employee {
+  background: #0c1422;
+  border-color: #29364c;
+}
+
+body.dark .employee-copy b {
+  color: #edf3ff;
+}
+
+body.dark .employee-copy span {
+  color: #8998ae;
+}
+
+body.dark .chevron {
+  color: #aab8cc;
+}
+
+/* =========================================================
+   AI THINKING INDICATOR
+   ========================================================= */
+
+.thinking-message {
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+    width: min(1120px, 100%);
+    margin: 12px auto;
+}
+
+.thinking-message .bot-icon {
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+    border-radius: 50%;
+    border: 1px solid #d2e0ff;
+    background: #f4f8ff;
+    display: grid;
+    place-items: center;
+}
+
+.thinking-message .bot-icon svg {
+    width: 27px;
+    height: 27px;
+}
+
+.thinking-bubble {
+    min-width: 74px;
+    min-height: 48px;
+
+    padding: 13px 17px;
+
+    display: flex;
+    align-items: center;
+    gap: 5px;
+
+    border: 1px solid var(--line);
+    border-radius: 14px;
+
+    background: #fff;
+
+    box-shadow: 0 2px 10px rgba(20, 37, 70, .025);
+}
+
+/* The three thinking dots */
+.thinking-dot {
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+
+    background: #7b879a;
+
+    animation: thinkingBlink 1.4s infinite ease-in-out;
+}
+
+.thinking-dot:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.thinking-dot:nth-child(2) {
+    animation-delay: .2s;
+}
+
+.thinking-dot:nth-child(3) {
+    animation-delay: .4s;
+}
+
+@keyframes thinkingBlink {
+    0%,
+    60%,
+    100% {
+        opacity: .25;
+        transform: translateY(0);
+    }
+
+    30% {
+        opacity: 1;
+        transform: translateY(-4px);
+    }
+}
+
+/* Optional "Thinking" label */
+.thinking-label {
+    margin-left: 7px;
+    color: #8995a8;
+    font-size: 11px;
+}
+
+
+/* Dark mode */
+body.dark .thinking-message .bot-icon {
+    background: #17243a;
+    border-color: #30466a;
+}
+
+body.dark .thinking-bubble {
+    background: #121d2f;
+    border-color: #2b3a50;
+}
+
+body.dark .thinking-dot {
+    background: #aab8cc;
+}
+
+body.dark .thinking-label {
+    color: #8797ad;
+}

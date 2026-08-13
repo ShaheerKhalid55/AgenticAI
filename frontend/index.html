@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HR Policy Assistant</title>
+  <link rel="stylesheet" href="/css/styles.css?v=20260813">
+</head>
+<body>
+  <div class="app">
+
+    <!-- Top navigation -->
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+            <rect x="7" y="7" width="50" height="50" rx="14" fill="#edf5ff"/>
+            <path d="M20 49V24l6-5 6 5v25M32 49V16l7-5 7 5v34M14 49h36"
+                  fill="none" stroke="#1769e8" stroke-width="2.6" stroke-linejoin="round"/>
+            <path d="M24 30h4M24 36h4M36 23h5M36 29h5M36 35h5"
+                  stroke="#24a6a3" stroke-width="2.3" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-title">HR Policy Assistant</div>
+          <div class="brand-subtitle">Your AI guide to company policies</div>
+        </div>
+      </div>
+
+      <!-- Status tabs -->
+      <!-- <div class="status-tabs">
+        <div class="status-card">
+          <span class="status-icon">
+            <svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM8 9h8M8 13h5"/></svg>
+          </span>
+          <span><b>Knowledge base</b><small><i></i> Connected</small></span>
+        </div>
+        <div class="status-card">
+          <span class="status-icon">
+            <svg viewBox="0 0 24 24"><path d="M5 6h14v10H8l-4 4V6z"/></svg>
+          </span>
+          <span><b>Memory</b><small><i></i> Connected</small></span>
+        </div>
+        <div class="status-card">
+          <span class="status-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 4 19 8v7l-7 5-7-5V8l7-4zM9 12h6M12 9v6"/></svg>
+          </span>
+          <span><b>Long-term memory</b><small><i></i> Connected</small></span>
+        </div>
+        <div class="status-card">
+          <span class="status-icon">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M4 12h16M12 4a13 13 0 0 1 0 16M12 4a13 13 0 0 0 0 16"/></svg>
+          </span>
+          <span><b>Web fetch (MCP)</b><small><strong>1 tool</strong></small></span>
+        </div>
+      </div> -->
+
+      <div class="avatar top-avatar">SK<span class="online"></span></div>
+    </header>
+
+    <div class="layout">
+
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <button class="new-chat" id="newChat">
+          <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          New chat
+        </button>
+
+        <!-- <button class="upload-docs" id="uploadDocuments">
+          <svg viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></svg>
+          Upload documents
+        </button> -->
+        <input id="fileInput" type="file" accept=".pdf" multiple hidden>
+
+        <div class="recent-heading">
+          <strong>Recent chats</strong>
+          <div>
+            <button aria-label="Search">
+              <svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
+            </button>
+            <button aria-label="Filter">
+              <svg viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="recent-chats" id="sessions"></div>
+
+        <!-- <div class="employee">
+          <div class="avatar employee-avatar">SK<span class="online"></span></div>
+          <div class="employee-copy">
+            <b>Employee</b>
+            <span id="employeeId">employee-2f1a3b</span>
+          </div>
+          <button class="chevron">⌄</button>
+          <button
+  class="theme-button"
+  id="themeButton"
+  type="button"
+  aria-label="Toggle theme"
+  title="Toggle light/dark mode"
+>
+  <svg
+    class="sun-icon"
+    viewBox="0 0 24 24"
+  >
+    <circle
+      cx="12"
+      cy="12"
+      r="4"
+    ></circle>
+
+    <path d="M12 2v2"></path>
+    <path d="M12 20v2"></path>
+
+    <path
+      d="m4.93 4.93 1.41 1.41"
+    ></path>
+
+    <path
+      d="m17.66 17.66 1.41 1.41"
+    ></path>
+
+    <path d="M2 12h2"></path>
+    <path d="M20 12h2"></path>
+
+    <path
+      d="m6.34 17.66-1.41 1.41"
+    ></path>
+
+    <path
+      d="m19.07 4.93-1.41 1.41"
+    ></path>
+  </svg>
+
+  <svg
+    class="moon-icon"
+    viewBox="0 0 24 24"
+  >
+    <path
+      d="M21 12.8A8.5 8.5 0 1 1 11.2 3
+         6.7 6.7 0 0 0 21 12.8Z"
+    ></path>
+  </svg>
+</button>
+        </div> -->
+      </aside>
+
+      <!-- Main -->
+      <main class="main">
+        <div class="hero">
+          <div class="hero-logo">
+            <svg viewBox="0 0 64 64" aria-hidden="true">
+              <rect x="6" y="6" width="52" height="52" rx="26" fill="#edf5ff"/>
+              <path d="M19 50V25l6-5 6 5v25M31 50V16l7-5 7 5v34M13 50h38"
+                    fill="none" stroke="#1769e8" stroke-width="2.7" stroke-linejoin="round"/>
+              <path d="M23 31h4M23 37h4M35 23h5M35 29h5M35 35h5"
+                    stroke="#24a6a3" stroke-width="2.2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div>
+            <h1>HR Policy Assistant</h1>
+            <p>Ask anything about company policies — answers are cited to the exact document and page.</p>
+          </div>
+        </div>
+
+        <!-- In-page capability cards -->
+        <div class="capabilities">
+          <div class="capability">
+            <div class="capability-icon books">▤</div>
+            <div><b>Knowledge base</b><span><i></i> Connected</span></div>
+          </div>
+          <div class="capability">
+            <div class="capability-icon memory">☁</div>
+            <div><b>Conversation memory</b><span><i></i> Connected</span></div>
+          </div>
+          <div class="capability">
+            <div class="capability-icon brain">✣</div>
+            <div><b>Long-term memory</b><span><i></i> Connected</span></div>
+          </div>
+          <div class="capability">
+            <div class="capability-icon globe">◎</div>
+            <div><b>Web fetch (MCP)</b><span>1 tool available</span></div>
+          </div>
+          <div class="capability">
+            <div class="capability-icon mic">♩</div>
+            <div><b>Voice mode</b><span>Text only</span></div>
+          </div>
+        </div>
+
+        <section class="chat" id="chat"></section>
+
+        <div id="working" class="working hidden">Working on it...</div>
+
+        <form class="composer" id="chatForm">
+          <textarea id="message" rows="1" placeholder="Ask a question about company policies..."></textarea>
+          <div class="composer-actions">
+            <!-- <button type="button" id="attachButton" class="icon-button" title="Attach document">
+              <svg viewBox="0 0 24 24"><path d="m20 11.5-8.3 8.3a5 5 0 0 1-7.1-7.1l8.6-8.6a3.5 3.5 0 0 1 5 5l-8.7 8.7a2 2 0 0 1-2.8-2.8l8-8"/></svg>
+            </button> -->
+            <button type="button" id="micButton" class="icon-button" title="Voice input">
+              <svg viewBox="0 0 24 24"><rect x="8" y="3" width="8" height="12" rx="4"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"/></svg>
+            </button>
+            <button type="submit" class="send-button" title="Send">
+              <svg viewBox="0 0 24 24"><path d="M12 19V5M6.5 10.5 12 5l5.5 5.5"/></svg>
+            </button>
+          </div>
+        </form>
+
+        <div class="disclaimer">AI-generated responses may contain mistakes. Please verify important information.</div>
+      </main>
+    </div>
+  </div>
+  <script src="/js/app.js?v=20260813"></script>
+</body>
+</html>
