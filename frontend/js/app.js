@@ -20,6 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (appShell) appShell.classList.remove("hidden");
     if (document.getElementById("companyName")) document.getElementById("companyName").textContent = user.company_name;
     if (document.getElementById("employeeId")) document.getElementById("employeeId").textContent = user.email;
+    if (document.getElementById("adminButton")) document.getElementById("adminButton").classList.toggle("hidden", user.role !== "company_admin");
   }
 
   function clearAuthentication() {
@@ -1096,4 +1097,156 @@ document.addEventListener("DOMContentLoaded", () => {
     loadSessions();
     loadHistory();
   });
+
+  // ---------------- Admin dashboard ----------------
+  const adminButton = $("adminButton");
+  const adminDashboard = $("adminDashboard");
+  const backToAssistant = $("backToAssistant");
+  const refreshAdmin = $("refreshAdmin");
+  const addUserButton = $("addUserButton");
+  const userModal = $("userModal");
+  const closeUserModal = $("closeUserModal");
+  const adminUserForm = $("adminUserForm");
+  const adminFileInput = $("adminFileInput");
+  const uploadPoliciesButton = $("uploadPoliciesButton");
+
+  function showAdminDashboard() {
+    if (!state.user || state.user.role !== "company_admin") return;
+    adminDashboard?.classList.remove("hidden");
+    appShell?.classList.add("hidden");
+    loadAdminDashboard();
+  }
+
+  function hideAdminDashboard() {
+    adminDashboard?.classList.add("hidden");
+    appShell?.classList.remove("hidden");
+  }
+
+  async function loadAdminDashboard() {
+    if (!state.token || state.user?.role !== "company_admin") return;
+    const errorBox = $("adminError");
+    errorBox?.classList.add("hidden");
+    try {
+      const [overviewResponse, usersResponse] = await Promise.all([
+        authFetch(`${API}/api/admin/overview`),
+        authFetch(`${API}/api/admin/users`)
+      ]);
+      const overview = await overviewResponse.json();
+      const users = await usersResponse.json();
+      if (!overviewResponse.ok) throw new Error(overview.detail || "Unable to load dashboard");
+      if (!usersResponse.ok) throw new Error(users.detail || "Unable to load users");
+
+      $("statEmployees").textContent = overview.employees ?? 0;
+      $("statUsers").textContent = overview.users ?? 0;
+      $("statPolicies").textContent = overview.policy_chunks ?? 0;
+      $("statConversations").textContent = overview.conversations ?? 0;
+      $("workspaceName").textContent = overview.company?.name || state.user.company_name || "—";
+      $("workspaceStatus").textContent = overview.company?.status || "active";
+      $("workspaceId").textContent = state.user.tenant_id || "—";
+      $("workspaceKnowledge").textContent = `${overview.policy_chunks ?? 0} indexed chunks`;
+      $("adminCompanySubtitle").textContent = `${overview.company?.name || state.user.company_name || "Company"} workspace`;
+      renderUsers(users);
+    } catch (error) {
+      if (errorBox) { errorBox.textContent = error.message; errorBox.classList.remove("hidden"); }
+    }
+  }
+
+  function renderUsers(users) {
+    const body = $("usersTableBody");
+    if (!body) return;
+    if (!Array.isArray(users) || !users.length) {
+      body.innerHTML = '<tr><td colspan="6" class="empty-table">No users yet.</td></tr>';
+      return;
+    }
+    body.innerHTML = users.map(user => {
+      const created = user.created_at ? new Date(user.created_at).toLocaleDateString() : "—";
+      const status = user.status || "active";
+      const role = user.role === "company_admin" ? "Company admin" : "Employee";
+      const action = user.id === state.user.id ? "" : `<button class="table-action" data-user-status="${user.id}">${status === "active" ? "Disable" : "Enable"}</button>`;
+      return `<tr>
+        <td><strong>${escapeHtml(user.full_name || "—")}</strong></td>
+        <td>${escapeHtml(user.email || "—")}</td>
+        <td><span class="role-pill">${role}</span></td>
+        <td><span class="status-pill ${status}">${status}</span></td>
+        <td>${created}</td>
+        <td>${action}</td>
+      </tr>`;
+    }).join("");
+
+    body.querySelectorAll("[data-user-status]").forEach(button => {
+      button.addEventListener("click", async () => {
+        const id = button.dataset.userStatus;
+        button.disabled = true;
+        try {
+          const response = await authFetch(`${API}/api/admin/users/${id}/status`, { method: "PATCH" });
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.detail || "Unable to update user");
+          await loadAdminDashboard();
+        } catch (error) {
+          const errorBox = $("adminError");
+          if (errorBox) { errorBox.textContent = error.message; errorBox.classList.remove("hidden"); }
+          button.disabled = false;
+        }
+      });
+    });
+  }
+
+  function escapeHtml(value) {
+    return String(value).replace(/[&<>'"]/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[char]));
+  }
+
+  adminButton?.addEventListener("click", showAdminDashboard);
+  backToAssistant?.addEventListener("click", hideAdminDashboard);
+  refreshAdmin?.addEventListener("click", loadAdminDashboard);
+  addUserButton?.addEventListener("click", () => userModal?.classList.remove("hidden"));
+  closeUserModal?.addEventListener("click", () => userModal?.classList.add("hidden"));
+  userModal?.addEventListener("click", event => { if (event.target === userModal) userModal.classList.add("hidden"); });
+
+  adminUserForm?.addEventListener("submit", async event => {
+    event.preventDefault();
+    const error = $("userFormError");
+    error?.classList.add("hidden");
+    try {
+      const response = await authFetch(`${API}/api/admin/users`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          full_name: $("adminUserName").value,
+          email: $("adminUserEmail").value,
+          password: $("adminUserPassword").value,
+          role: $("adminUserRole").value
+        })
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.detail || "Unable to create user");
+      adminUserForm.reset();
+      userModal?.classList.add("hidden");
+      await loadAdminDashboard();
+    } catch (err) {
+      if (error) { error.textContent = err.message; error.classList.remove("hidden"); }
+    }
+  });
+
+  uploadPoliciesButton?.addEventListener("click", () => adminFileInput?.click());
+  adminFileInput?.addEventListener("change", async () => {
+    const files = Array.from(adminFileInput.files || []);
+    if (!files.length) return;
+    const status = $("uploadStatus");
+    status.textContent = "Uploading and indexing…";
+    const form = new FormData();
+    files.forEach(file => form.append("files", file));
+    try {
+      const response = await authFetch(`${API}/api/documents/upload`, { method: "POST", body: form });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.detail || "Upload failed");
+      status.textContent = `Uploaded ${result.documents} PDF(s), ${result.chunks} chunks indexed.`;
+      adminFileInput.value = "";
+      await loadAdminDashboard();
+    } catch (error) {
+      status.textContent = error.message;
+    }
+  });
+
+  if (adminButton && state.user?.role === "company_admin") adminButton.classList.remove("hidden");
+
 });

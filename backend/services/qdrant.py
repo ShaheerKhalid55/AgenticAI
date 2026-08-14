@@ -13,6 +13,8 @@ from ..memory.embeddings import MxBaiEmbeddings
 
 
 class QdrantService:
+    POLICY_COLLECTION = POLICY_COLLECTION
+
     def __init__(self):
         if not QDRANT_MEMORY_URL:
             raise RuntimeError("QDRANT_MEMORY_URL is not configured")

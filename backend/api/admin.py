@@ -48,3 +48,58 @@ def create_user(request: CreateUserRequest, current_user: dict = Depends(require
     user.pop("password_hash", None)
     user.pop("_id", None)
     return user
+
+
+@router.get("/overview")
+def admin_overview(current_user: dict = Depends(require_role("company_admin"))):
+    from ..main import services
+
+    tenant_id = current_user["tenant_id"]
+    user_filter = {"tenant_id": tenant_id}
+    total_users = services.mongo.users.count_documents(user_filter)
+    active_users = services.mongo.users.count_documents({**user_filter, "status": "active"})
+    admins = services.mongo.users.count_documents({**user_filter, "role": "company_admin"})
+    employees = services.mongo.users.count_documents({**user_filter, "role": "employee"})
+    conversations = services.mongo.sessions.count_documents({"tenant_id": tenant_id})
+
+    policy_chunks = 0
+    try:
+        if services.qdrant.client.collection_exists(services.qdrant.POLICY_COLLECTION if hasattr(services.qdrant, "POLICY_COLLECTION") else ""):
+            pass
+    except Exception:
+        pass
+    try:
+        from ..config import POLICY_COLLECTION
+        if services.qdrant.client.collection_exists(POLICY_COLLECTION):
+            policy_chunks = services.qdrant.client.count(
+                collection_name=POLICY_COLLECTION,
+                count_filter=services.qdrant._tenant_filter(tenant_id),
+                exact=True,
+            ).count
+    except Exception:
+        policy_chunks = 0
+
+    company = services.mongo.companies.find_one({"id": tenant_id}, {"_id": 0, "name": 1, "status": 1, "created_at": 1}) or {}
+    return {
+        "company": company,
+        "users": total_users,
+        "active_users": active_users,
+        "admins": admins,
+        "employees": employees,
+        "conversations": conversations,
+        "policy_chunks": policy_chunks,
+    }
+
+
+@router.patch("/users/{user_id}/status")
+def update_user_status(user_id: str, current_user: dict = Depends(require_role("company_admin"))):
+    from ..main import services
+
+    if user_id == current_user["sub"]:
+        raise HTTPException(400, "You cannot disable your own account")
+    user = services.mongo.users.find_one({"id": user_id, "tenant_id": current_user["tenant_id"]})
+    if not user:
+        raise HTTPException(404, "User not found")
+    new_status = "inactive" if user.get("status", "active") == "active" else "active"
+    services.mongo.users.update_one({"id": user_id, "tenant_id": current_user["tenant_id"]}, {"$set": {"status": new_status}})
+    return {"id": user_id, "status": new_status}

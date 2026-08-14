@@ -92,7 +92,7 @@
         </div>
       </div> -->
 
-      <div class="top-user"><span id="companyName">Company</span><button id="logoutButton" class="logout-button" type="button">Sign out</button></div>
+      <div class="top-user"><span id="companyName">Company</span><button id="adminButton" class="admin-button hidden" type="button">Admin Dashboard</button><button id="logoutButton" class="logout-button" type="button">Sign out</button></div>
     </header>
 
     <div class="layout">
@@ -249,6 +249,75 @@
       </main>
     </div>
   </div>
-  <script src="/js/app.js?v=20260814-auth"></script>
+
+  <section id="adminDashboard" class="admin-dashboard hidden">
+    <div class="admin-shell">
+      <header class="admin-header">
+        <div>
+          <button id="backToAssistant" class="admin-back" type="button">← Back to assistant</button>
+          <h1>Admin Dashboard</h1>
+          <p id="adminCompanySubtitle">Manage your company workspace</p>
+        </div>
+        <button id="refreshAdmin" class="admin-refresh" type="button">↻ Refresh</button>
+      </header>
+
+      <div id="adminError" class="admin-error hidden"></div>
+
+      <div class="admin-stats">
+        <div class="stat-card"><span>Employees</span><strong id="statEmployees">—</strong><small>Company employees</small></div>
+        <div class="stat-card"><span>Total users</span><strong id="statUsers">—</strong><small>All workspace users</small></div>
+        <div class="stat-card"><span>Policy chunks</span><strong id="statPolicies">—</strong><small>Indexed knowledge</small></div>
+        <div class="stat-card"><span>Conversations</span><strong id="statConversations">—</strong><small>Workspace chats</small></div>
+      </div>
+
+      <div class="admin-grid">
+        <section class="admin-card users-card">
+          <div class="admin-card-heading">
+            <div><h2>Users</h2><p>Manage people in this company workspace.</p></div>
+            <button id="addUserButton" class="admin-primary" type="button">+ Add user</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Created</th><th></th></tr></thead>
+              <tbody id="usersTableBody"><tr><td colspan="6" class="empty-table">Loading users…</td></tr></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="admin-card workspace-card">
+          <div class="admin-card-heading"><div><h2>Workspace</h2><p>Company information and policy management.</p></div></div>
+          <div class="workspace-detail"><span>Company</span><strong id="workspaceName">—</strong></div>
+          <div class="workspace-detail"><span>Status</span><strong id="workspaceStatus">—</strong></div>
+          <div class="workspace-detail"><span>Workspace ID</span><code id="workspaceId">—</code></div>
+          <div class="workspace-detail"><span>Knowledge base</span><strong id="workspaceKnowledge">—</strong></div>
+          <div class="admin-upload">
+            <h3>Upload HR policies</h3>
+            <p>PDF files are indexed only for this company.</p>
+            <input id="adminFileInput" type="file" accept=".pdf" multiple hidden>
+            <button id="uploadPoliciesButton" class="admin-secondary" type="button">Upload policy PDFs</button>
+            <div id="uploadStatus" class="upload-status"></div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </section>
+
+  <div id="userModal" class="modal hidden">
+    <div class="modal-card">
+      <button id="closeUserModal" class="modal-close" type="button">×</button>
+      <h2>Add workspace user</h2>
+      <p>Create an employee or another company administrator.</p>
+      <form id="adminUserForm">
+        <label>Full name</label><input id="adminUserName" required minlength="2" maxlength="120">
+        <label>Email</label><input id="adminUserEmail" type="email" required>
+        <label>Temporary password</label><input id="adminUserPassword" type="password" required minlength="8">
+        <label>Role</label><select id="adminUserRole"><option value="employee">Employee</option><option value="company_admin">Company admin</option></select>
+        <div id="userFormError" class="auth-error hidden"></div>
+        <button class="admin-primary full" type="submit">Create user</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="/js/app.js?v=20260814-admin2"></script>
 </body>
 </html>
