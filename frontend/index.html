@@ -7,7 +7,44 @@
   <link rel="stylesheet" href="/css/styles.css?v=20260813">
 </head>
 <body>
-  <div class="app">
+
+  <div id="authScreen" class="auth-screen">
+    <div class="auth-card">
+      <div class="auth-logo">HR</div>
+      <h1>HR Policy Assistant</h1>
+      <p class="auth-subtitle">Sign in to your company workspace</p>
+
+      <div id="loginView">
+        <form id="loginForm">
+          <label>Email</label>
+          <input id="loginEmail" type="email" autocomplete="email" required placeholder="you@company.com">
+          <label>Password</label>
+          <input id="loginPassword" type="password" autocomplete="current-password" required placeholder="••••••••">
+          <button type="submit" class="auth-primary">Sign in</button>
+          <div id="loginError" class="auth-error hidden"></div>
+        </form>
+        <p class="auth-switch">New company? <button type="button" id="showRegister">Create workspace</button></p>
+      </div>
+
+      <div id="registerView" class="hidden">
+        <form id="registerForm">
+          <label>Company name</label>
+          <input id="registerCompany" type="text" required placeholder="Acme Corporation">
+          <label>Your name</label>
+          <input id="registerName" type="text" required placeholder="Jane Smith">
+          <label>Work email</label>
+          <input id="registerEmail" type="email" required placeholder="jane@company.com">
+          <label>Password</label>
+          <input id="registerPassword" type="password" minlength="8" required placeholder="At least 8 characters">
+          <button type="submit" class="auth-primary">Create workspace</button>
+          <div id="registerError" class="auth-error hidden"></div>
+        </form>
+        <p class="auth-switch">Already have an account? <button type="button" id="showLogin">Sign in</button></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="app hidden" id="appShell">
 
     <!-- Top navigation -->
     <header class="topbar">
@@ -55,7 +92,7 @@
         </div>
       </div> -->
 
-      <div class="avatar top-avatar">SK<span class="online"></span></div>
+      <div class="top-user"><span id="companyName">Company</span><button id="logoutButton" class="logout-button" type="button">Sign out</button></div>
     </header>
 
     <div class="layout">
@@ -212,6 +249,6 @@
       </main>
     </div>
   </div>
-  <script src="/js/app.js?v=20260813"></script>
+  <script src="/js/app.js?v=20260814-auth"></script>
 </body>
 </html>

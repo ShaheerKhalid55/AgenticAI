@@ -32,3 +32,8 @@ CORS_ORIGINS = [
         "http://localhost:5500,http://127.0.0.1:5500,http://localhost:8000",
     ).split(",") if x.strip()
 ]
+
+
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
+JWT_EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRE_MINUTES", "60"))

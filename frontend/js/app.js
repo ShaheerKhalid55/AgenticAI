@@ -3,14 +3,129 @@ document.addEventListener("DOMContentLoaded", () => {
   const API = "";
 
   const state = {
-    userId: localStorage.getItem("hr_user_id") || `employee-${crypto.randomUUID().slice(0, 8)}`,
+    token: localStorage.getItem("hr_access_token") || "",
+    user: JSON.parse(localStorage.getItem("hr_user") || "null"),
     threadId: localStorage.getItem("hr_thread_id") || crypto.randomUUID()
   };
 
-  localStorage.setItem("hr_user_id", state.userId);
-  localStorage.setItem("hr_thread_id", state.threadId);
+  const authScreen = document.getElementById("authScreen");
+  const appShell = document.getElementById("appShell");
+
+  function setAuthenticated(token, user) {
+    state.token = token;
+    state.user = user;
+    localStorage.setItem("hr_access_token", token);
+    localStorage.setItem("hr_user", JSON.stringify(user));
+    if (authScreen) authScreen.classList.add("hidden");
+    if (appShell) appShell.classList.remove("hidden");
+    if (document.getElementById("companyName")) document.getElementById("companyName").textContent = user.company_name;
+    if (document.getElementById("employeeId")) document.getElementById("employeeId").textContent = user.email;
+  }
+
+  function clearAuthentication() {
+    state.token = "";
+    state.user = null;
+    localStorage.removeItem("hr_access_token");
+    localStorage.removeItem("hr_user");
+    localStorage.removeItem("hr_thread_id");
+    if (appShell) appShell.classList.add("hidden");
+    if (authScreen) authScreen.classList.remove("hidden");
+  }
+
+  async function authFetch(url, options = {}) {
+    const headers = new Headers(options.headers || {});
+    if (state.token) headers.set("Authorization", `Bearer ${state.token}`);
+    const response = await fetch(url, { ...options, headers });
+    if (response.status === 401) {
+      clearAuthentication();
+      throw new Error("Your session has expired. Please sign in again.");
+    }
+    return response;
+  }
+
+  async function initAuth() {
+    if (!state.token) {
+      clearAuthentication();
+      return false;
+    }
+    try {
+      const response = await authFetch(`${API}/api/auth/me`);
+      if (!response.ok) throw new Error("Session invalid");
+      const user = await response.json();
+      setAuthenticated(state.token, user);
+      return true;
+    } catch (_) {
+      clearAuthentication();
+      return false;
+    }
+  }
 
   const $ = (id) => document.getElementById(id);
+  const loginForm = document.getElementById("loginForm");
+  const registerForm = document.getElementById("registerForm");
+  const loginView = document.getElementById("loginView");
+  const registerView = document.getElementById("registerView");
+  const loginError = document.getElementById("loginError");
+  const registerError = document.getElementById("registerError");
+
+  document.getElementById("showRegister")?.addEventListener("click", () => {
+    loginView?.classList.add("hidden");
+    registerView?.classList.remove("hidden");
+  });
+  document.getElementById("showLogin")?.addEventListener("click", () => {
+    registerView?.classList.add("hidden");
+    loginView?.classList.remove("hidden");
+  });
+
+  loginForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    loginError?.classList.add("hidden");
+    const form = new URLSearchParams();
+    form.set("username", document.getElementById("loginEmail").value);
+    form.set("password", document.getElementById("loginPassword").value);
+    try {
+      const response = await fetch(`${API}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: form.toString()
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.detail || "Login failed");
+      setAuthenticated(result.access_token, result.user);
+      await loadSessions();
+      await loadHistory();
+    } catch (error) {
+      if (loginError) { loginError.textContent = error.message; loginError.classList.remove("hidden"); }
+    }
+  });
+
+  registerForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    registerError?.classList.add("hidden");
+    try {
+      const response = await fetch(`${API}/api/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          company_name: document.getElementById("registerCompany").value,
+          full_name: document.getElementById("registerName").value,
+          email: document.getElementById("registerEmail").value,
+          password: document.getElementById("registerPassword").value
+        })
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.detail || "Registration failed");
+      setAuthenticated(result.access_token, result.user);
+      await loadSessions();
+    } catch (error) {
+      if (registerError) { registerError.textContent = error.message; registerError.classList.remove("hidden"); }
+    }
+  });
+
+  document.getElementById("logoutButton")?.addEventListener("click", () => {
+    clearAuthentication();
+  });
+
 
   const chat = $("chat");
   const input = $("message");
@@ -25,7 +140,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  if ($("employeeId")) $("employeeId").textContent = state.userId;
+  if ($("employeeId") && state.user) $("employeeId").textContent = state.user.email;
 
   const logo = `
     <svg viewBox="0 0 64 64" aria-hidden="true">
@@ -203,11 +318,11 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     try {
-      const response = await fetch(`${API}/api/chat`, {
+      const response = await authFetch(`${API}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          user_id: state.userId,
+          user_id: state.user.id,
           thread_id: state.threadId,
           message: text
         })
@@ -439,9 +554,7 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("✅ Rendering recent chats");
 
     try {
-      const response = await fetch(
-        `${API}/api/sessions?user_id=${encodeURIComponent(state.userId)}`
-      );
+      const response = await authFetch(`${API}/api/sessions`);
 
       if (!response.ok) {
         console.error(
@@ -585,9 +698,7 @@ document.addEventListener("DOMContentLoaded", () => {
     chat.innerHTML = "";
 
     try {
-      const response = await fetch(
-        `${API}/api/sessions/${encodeURIComponent(state.threadId)}/history`
-      );
+      const response = await authFetch(`${API}/api/sessions/${encodeURIComponent(state.threadId)}/history`);
 
       if (!response.ok) return;
 
@@ -608,10 +719,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function newChat() {
     try {
-      const response = await fetch(`${API}/api/sessions`, {
+      const response = await authFetch(`${API}/api/sessions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: state.userId })
+        body: JSON.stringify({})
       });
 
       if (!response.ok) return;
@@ -642,7 +753,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setWorking("Processing policy documents...", true);
 
     try {
-      const response = await fetch(`${API}/api/documents/upload`, {
+      const response = await authFetch(`${API}/api/documents/upload`, {
         method: "POST",
         body: form
       });
@@ -977,9 +1088,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Initialize immediately because we are already inside
-  // the page's DOMContentLoaded handler.
-  initializeTheme();
-  loadSessions();
-  loadHistory();
+  // Authenticate first. Only initialize the application after the
+  // backend confirms the user's identity and tenant.
+  initAuth().then((authenticated) => {
+    if (!authenticated) return;
+    initializeTheme();
+    loadSessions();
+    loadHistory();
+  });
 });

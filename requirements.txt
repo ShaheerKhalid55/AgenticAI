@@ -16,3 +16,7 @@ langgraph-checkpoint-mongodb
 langmem
 langchain-mcp-adapters
 openai
+
+pwdlib[argon2]
+pyjwt
+email-validator

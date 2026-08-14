@@ -54,3 +54,17 @@ The first startup loads the MXBAI embedding model. This can take time and requir
 Once running:
 
 http://localhost:8000/docs
+
+## Authentication and multi-tenancy
+
+The application now uses JWT authentication with Argon2 password hashing and a tenant/company ID on every user. Policy vectors are tagged with `tenant_id`, and every policy retrieval is filtered to the authenticated tenant. Company admins can create employees through `/api/admin/users`.
+
+For an existing single-company Qdrant policy collection, run `migrate_legacy_policy.py <tenant_id>` once after creating the company. Do not run it on a collection that already contains multiple companies' documents.
+
+Required production secret:
+
+- `JWT_SECRET_KEY` — generate a long random secret, for example `openssl rand -hex 32`
+
+Optional:
+
+- `JWT_EXPIRE_MINUTES` (default `60`)

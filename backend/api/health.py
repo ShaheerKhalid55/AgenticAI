@@ -1,4 +1,5 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from ..auth.security import get_current_user
 
 router = APIRouter(prefix="/api", tags=["system"])
 
@@ -16,10 +17,10 @@ def health():
 
 
 @router.get("/status")
-def status():
+def status(current_user: dict = Depends(get_current_user)):
     from ..main import services
     return {
-        "knowledge_base": bool(services.qdrant and services.qdrant.policy_retriever()),
+        "knowledge_base": bool(services.qdrant and services.qdrant.policy_retriever(current_user["tenant_id"])),
         "conversation_memory": bool(services.mongo and services.mongo.ping()),
         "long_term_memory": bool(services.agent and services.agent.memory_store),
         "mcp_tools": len(services.agent.mcp_tools) if services.agent else 0,

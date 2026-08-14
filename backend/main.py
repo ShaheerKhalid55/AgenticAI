@@ -5,14 +5,15 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from .config import CORS_ORIGINS
+from .config import CORS_ORIGINS, JWT_SECRET_KEY
 from .services.mongo import MongoService
 from .services.qdrant import QdrantService
 from .services.voice import VoiceService
 from .agent.graph import AgentService
 from importlib.resources import files
 
-from .api import chat, sessions, documents, voice, health
+from .api import chat, sessions, documents, voice, health, admin
+from .auth import api as auth
 
 
 class Services:
@@ -27,6 +28,8 @@ services = Services()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    if not JWT_SECRET_KEY:
+        raise RuntimeError("JWT_SECRET_KEY is not configured")
     services.mongo = MongoService()
     services.qdrant = QdrantService()
     services.voice = VoiceService()
@@ -49,6 +52,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth.router)
+app.include_router(admin.router)
 app.include_router(chat.router)
 app.include_router(sessions.router)
 app.include_router(documents.router)

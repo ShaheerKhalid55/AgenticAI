@@ -5,16 +5,14 @@ from pydantic import BaseModel, Field
 class ChatRequest(BaseModel):
     user_id: str
     thread_id: str
-    message: str
+    message: str = Field(min_length=1, max_length=12000)
 
 
 class SessionCreateRequest(BaseModel):
-    user_id: str
     title: Optional[str] = None
 
 
 class SessionRenameRequest(BaseModel):
-    user_id: str
     title: str = Field(min_length=1, max_length=80)
 
 

@@ -27,6 +27,9 @@ dependencies = [
     "langmem",
     "langchain-mcp-adapters",
     "openai",
+    "pwdlib[argon2]",
+    "pyjwt",
+    "email-validator",
 ]
 
 [tool.setuptools.packages.find]

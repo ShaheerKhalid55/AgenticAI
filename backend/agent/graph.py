@@ -129,7 +129,7 @@ class AgentService:
             return "\n\n".join(formatted) or "No matching policy passages were found."
 
         self.tools = [query_hr_policies]
-        namespace = ("hr_employee_memories", "{user_id}")
+        namespace = ("tenants", "{tenant_id}", "users", "{user_id}")
         self.tools.extend([
             create_manage_memory_tool(namespace=namespace),
             create_search_memory_tool(namespace=namespace),
@@ -214,10 +214,10 @@ class AgentService:
             if text:
                 yield {"type": "token", "text": text}
 
-    def history(self, thread_id: str):
+    def history(self, tenant_id: str, thread_id: str):
         if not self.checkpointer:
             return []
-        config = {"configurable": {"thread_id": thread_id}}
+        config = {"configurable": {"thread_id": f"{tenant_id}:{thread_id}"}}
         try:
             checkpoint = self.checkpointer.get_tuple(config)
         except Exception:
