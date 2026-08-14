@@ -92,7 +92,7 @@
         </div>
       </div> -->
 
-      <div class="top-user"><span id="companyName">Company</span><button id="adminButton" class="admin-button hidden" type="button">Admin Dashboard</button><button id="logoutButton" class="logout-button" type="button">Sign out</button></div>
+      <div class="top-user"><span id="companyName">Company</span><button id="logoutButton" class="logout-button" type="button">Sign out</button></div>
     </header>
 
     <div class="layout">
@@ -103,6 +103,17 @@
           <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
           New chat
         </button>
+
+        <nav class="sidebar-nav" aria-label="Application navigation">
+          <button id="assistantNavButton" class="sidebar-nav-button active" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4V5z"/><path d="M8 9h8M8 12h5"/></svg>
+            <span>AI Assistant</span>
+          </button>
+          <button id="adminNavButton" class="sidebar-nav-button admin-nav-button hidden" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V9l8-5 8 5v11H4z"/><path d="M9 20v-6h6v6M8 10h1M12 10h1M16 10h1"/></svg>
+            <span>Admin Dashboard</span>
+          </button>
+        </nav>
 
         <!-- <button class="upload-docs" id="uploadDocuments">
           <svg viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></svg>
@@ -304,7 +315,7 @@
 
   <div id="userModal" class="modal hidden">
     <div class="modal-card">
-      <button id="closeUserModal" class="modal-close" type="button">×</button>
+      <button id="closeUserModal" class="modal-close" type="button" aria-label="Close dialog">×</button>
       <h2>Add workspace user</h2>
       <p>Create an employee or another company administrator.</p>
       <form id="adminUserForm">
@@ -313,11 +324,11 @@
         <label>Temporary password</label><input id="adminUserPassword" type="password" required minlength="8">
         <label>Role</label><select id="adminUserRole"><option value="employee">Employee</option><option value="company_admin">Company admin</option></select>
         <div id="userFormError" class="auth-error hidden"></div>
-        <button class="admin-primary full" type="submit">Create user</button>
+        <div class="modal-actions"><button id="cancelUserModal" class="admin-secondary" type="button">Cancel</button><button class="admin-primary" type="submit">Create user</button></div>
       </form>
     </div>
   </div>
 
-  <script src="/js/app.js?v=20260814-admin2"></script>
+  <script src="/js/app.js?v=20260814-admin3"></script>
 </body>
 </html>

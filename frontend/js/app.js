@@ -20,7 +20,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (appShell) appShell.classList.remove("hidden");
     if (document.getElementById("companyName")) document.getElementById("companyName").textContent = user.company_name;
     if (document.getElementById("employeeId")) document.getElementById("employeeId").textContent = user.email;
-    if (document.getElementById("adminButton")) document.getElementById("adminButton").classList.toggle("hidden", user.role !== "company_admin");
+    const adminNavButton = document.getElementById("adminNavButton");
+    if (adminNavButton) adminNavButton.classList.toggle("hidden", user.role !== "company_admin");
   }
 
   function clearAuthentication() {
@@ -124,6 +125,8 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.getElementById("logoutButton")?.addEventListener("click", () => {
+    closeUserModal();
+    hideAdminDashboard();
     clearAuthentication();
   });
 
@@ -542,6 +545,17 @@ document.addEventListener("DOMContentLoaded", () => {
       hideThinking();
       setWorking("", false);
     }
+  }
+
+  function renderEmptySessions(container) {
+    if (!container) return;
+    container.innerHTML = `
+      <div class="empty-sessions">
+        <span class="empty-sessions-icon">⌁</span>
+        <span>No recent chats yet</span>
+        <small>Start a new conversation.</small>
+      </div>
+    `;
   }
 
   async function loadSessions() {
@@ -1099,27 +1113,60 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ---------------- Admin dashboard ----------------
-  const adminButton = $("adminButton");
+  const adminNavButton = $("adminNavButton");
+  const assistantNavButton = $("assistantNavButton");
   const adminDashboard = $("adminDashboard");
   const backToAssistant = $("backToAssistant");
   const refreshAdmin = $("refreshAdmin");
   const addUserButton = $("addUserButton");
   const userModal = $("userModal");
-  const closeUserModal = $("closeUserModal");
+  const closeUserModalButton = $("closeUserModal");
+  const cancelUserModal = $("cancelUserModal");
   const adminUserForm = $("adminUserForm");
   const adminFileInput = $("adminFileInput");
   const uploadPoliciesButton = $("uploadPoliciesButton");
 
+  function closeUserModal() {
+    userModal?.classList.add("hidden");
+    userModal?.setAttribute("aria-hidden", "true");
+    adminUserForm?.reset();
+    const error = $("userFormError");
+    error?.classList.add("hidden");
+    if (error) error.textContent = "";
+  }
+
+  function showUserModal() {
+    if (!state.user || state.user.role !== "company_admin") return;
+    userModal?.classList.remove("hidden");
+    userModal?.setAttribute("aria-hidden", "false");
+    setTimeout(() => $("adminUserName")?.focus(), 0);
+  }
+
   function showAdminDashboard() {
     if (!state.user || state.user.role !== "company_admin") return;
+    closeUserModal();
     adminDashboard?.classList.remove("hidden");
     appShell?.classList.add("hidden");
+    adminNavButton?.classList.add("active");
+    assistantNavButton?.classList.remove("active");
     loadAdminDashboard();
   }
 
   function hideAdminDashboard() {
+    closeUserModal();
     adminDashboard?.classList.add("hidden");
     appShell?.classList.remove("hidden");
+    adminNavButton?.classList.remove("active");
+    assistantNavButton?.classList.add("active");
+  }
+
+  function showAssistant() {
+    closeUserModal();
+    adminDashboard?.classList.add("hidden");
+    appShell?.classList.remove("hidden");
+    adminNavButton?.classList.remove("active");
+    assistantNavButton?.classList.add("active");
+    input?.focus();
   }
 
   async function loadAdminDashboard() {
@@ -1195,12 +1242,21 @@ document.addEventListener("DOMContentLoaded", () => {
     return String(value).replace(/[&<>'"]/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[char]));
   }
 
-  adminButton?.addEventListener("click", showAdminDashboard);
+  adminNavButton?.addEventListener("click", showAdminDashboard);
+  assistantNavButton?.addEventListener("click", showAssistant);
   backToAssistant?.addEventListener("click", hideAdminDashboard);
   refreshAdmin?.addEventListener("click", loadAdminDashboard);
-  addUserButton?.addEventListener("click", () => userModal?.classList.remove("hidden"));
-  closeUserModal?.addEventListener("click", () => userModal?.classList.add("hidden"));
-  userModal?.addEventListener("click", event => { if (event.target === userModal) userModal.classList.add("hidden"); });
+  addUserButton?.addEventListener("click", showUserModal);
+  closeUserModalButton?.addEventListener("click", closeUserModal);
+  cancelUserModal?.addEventListener("click", closeUserModal);
+  userModal?.addEventListener("click", event => {
+    if (event.target === userModal) closeUserModal();
+  });
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && userModal && !userModal.classList.contains("hidden")) {
+      closeUserModal();
+    }
+  });
 
   adminUserForm?.addEventListener("submit", async event => {
     event.preventDefault();
@@ -1219,8 +1275,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.detail || "Unable to create user");
-      adminUserForm.reset();
-      userModal?.classList.add("hidden");
+      closeUserModal();
       await loadAdminDashboard();
     } catch (err) {
       if (error) { error.textContent = err.message; error.classList.remove("hidden"); }
@@ -1247,6 +1302,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  if (adminButton && state.user?.role === "company_admin") adminButton.classList.remove("hidden");
+  if (adminNavButton && state.user?.role === "company_admin") adminNavButton.classList.remove("hidden");
+  assistantNavButton?.classList.add("active");
 
 });
