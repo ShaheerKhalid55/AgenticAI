@@ -61,19 +61,18 @@ def admin_overview(current_user: dict = Depends(require_role("company_admin"))):
     admins = services.mongo.users.count_documents({**user_filter, "role": "company_admin"})
     employees = services.mongo.users.count_documents({**user_filter, "role": "employee"})
     conversations = services.mongo.sessions.count_documents({"tenant_id": tenant_id})
+    policy_documents = services.mongo.documents.count_documents({"tenant_id": tenant_id})
+    active_documents = services.mongo.documents.count_documents({"tenant_id": tenant_id, "status": "active"})
+    archived_documents = services.mongo.documents.count_documents({"tenant_id": tenant_id, "status": "archived"})
+    failed_documents = services.mongo.documents.count_documents({"tenant_id": tenant_id, "status": "failed"})
 
     policy_chunks = 0
-    try:
-        if services.qdrant.client.collection_exists(services.qdrant.POLICY_COLLECTION if hasattr(services.qdrant, "POLICY_COLLECTION") else ""):
-            pass
-    except Exception:
-        pass
     try:
         from ..config import POLICY_COLLECTION
         if services.qdrant.client.collection_exists(POLICY_COLLECTION):
             policy_chunks = services.qdrant.client.count(
                 collection_name=POLICY_COLLECTION,
-                count_filter=services.qdrant._tenant_filter(tenant_id),
+                count_filter=services.qdrant._active_policy_filter(tenant_id),
                 exact=True,
             ).count
     except Exception:
@@ -88,6 +87,10 @@ def admin_overview(current_user: dict = Depends(require_role("company_admin"))):
         "employees": employees,
         "conversations": conversations,
         "policy_chunks": policy_chunks,
+        "policy_documents": policy_documents,
+        "active_documents": active_documents,
+        "archived_documents": archived_documents,
+        "failed_documents": failed_documents,
     }
 
 

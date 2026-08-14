@@ -2,6 +2,9 @@
 
 Usage: python migrate_legacy_policy.py <tenant_id>
 Only run this for a collection that previously belonged to one company.
+
+LangChain Qdrant stores Document.metadata under the `metadata` payload key,
+so this script writes tenant_id into metadata for old points.
 """
 import sys
 from qdrant_client import QdrantClient
@@ -27,14 +30,24 @@ while True:
     )
     if not points:
         break
-    ids = [p.id for p in points if not (p.payload or {}).get("tenant_id")]
-    if ids:
+
+    for point in points:
+        payload = point.payload or {}
+        metadata = dict(payload.get("metadata") or {})
+        if metadata.get("tenant_id"):
+            continue
+
+        # Older versions may have stored tenant_id at the payload root.
+        # Preserve any existing metadata while moving that value into it.
+        legacy_tenant = payload.get("tenant_id") or tenant_id
+        metadata["tenant_id"] = legacy_tenant
         client.set_payload(
             collection_name=POLICY_COLLECTION,
-            payload={"tenant_id": tenant_id},
-            points=ids,
+            payload={"metadata": metadata},
+            points=[point.id],
         )
-        updated += len(ids)
+        updated += 1
+
     if next_offset is None:
         break
     offset = next_offset

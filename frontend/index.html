@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HR Policy Assistant</title>
+  <title>HR Employee Assistant</title>
   <link rel="stylesheet" href="/css/styles.css?v=20260813">
 </head>
 <body>
@@ -11,7 +11,7 @@
   <div id="authScreen" class="auth-screen">
     <div class="auth-card">
       <div class="auth-logo">HR</div>
-      <h1>HR Policy Assistant</h1>
+      <h1>HR Employee Assistant</h1>
       <p class="auth-subtitle">Sign in to your company workspace</p>
 
       <div id="loginView">
@@ -59,7 +59,7 @@
           </svg>
         </div>
         <div>
-          <div class="brand-title">HR Policy Assistant</div>
+          <div class="brand-title">HR Employee Assistant</div>
           <div class="brand-subtitle">Your AI guide to company policies</div>
         </div>
       </div>
@@ -208,7 +208,7 @@
             </svg>
           </div>
           <div>
-            <h1>HR Policy Assistant</h1>
+            <h1>HR Employee Assistant</h1>
             <p>Ask anything about company policies — answers are cited to the exact document and page.</p>
           </div>
         </div>
@@ -310,6 +310,36 @@
           </div>
         </section>
       </div>
+
+      <section class="admin-card documents-card">
+        <div class="admin-card-heading">
+          <div>
+            <h2>Policy Document Library</h2>
+            <p>Manage versions, publishing status, and policy ownership for this workspace.</p>
+          </div>
+          <div class="document-library-actions">
+            <span id="documentSummary" class="document-summary">Loading policies…</span>
+            <button id="refreshDocuments" class="admin-secondary" type="button">↻ Refresh</button>
+          </div>
+        </div>
+        <div class="document-filters">
+          <input id="documentSearch" type="search" placeholder="Search policy documents…" aria-label="Search policy documents">
+          <select id="documentStatusFilter" aria-label="Filter policy status">
+            <option value="all">All statuses</option>
+            <option value="active">Active</option>
+            <option value="archived">Archived</option>
+            <option value="failed">Failed</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table class="documents-table">
+            <thead>
+              <tr><th>Policy</th><th>Version</th><th>Uploaded</th><th>Status</th><th>Pages</th><th>Chunks</th><th>Tenant</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="documentsTableBody"><tr><td colspan="8" class="empty-table">Loading policy library…</td></tr></tbody>
+          </table>
+        </div>
+      </section>
     </div>
   </section>
 
@@ -329,6 +359,6 @@
     </div>
   </div>
 
-  <script src="/js/app.js?v=20260814-admin3"></script>
+  <script src="/js/app.js?v=20260814-documents1"></script>
 </body>
 </html>

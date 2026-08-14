@@ -25,3 +25,25 @@ Ctrl + Shift + R
 
 
 Deployment fix: disabled Qdrant startup collection validation embedding call and increased Mixedbread API retries for transient 5xx/503 responses.
+
+2026-08-14 - Policy Document Management
+- Added tenant-scoped policy document library backed by MongoDB metadata.
+- Added document versioning by tenant and policy filename.
+- Added active, archived, processing, and failed policy states.
+- Added archive, restore, and permanent delete endpoints.
+- Added Qdrant payload metadata for document_id, document_version, and policy_status.
+- Archived/failed/processing vectors are excluded from HR policy retrieval.
+- Added admin dashboard policy document table with search/status filters and actions.
+- Added document counts and active/archived/failed statistics to admin overview.
+2026-08-14 - Fix Qdrant policy retrieval metadata filters
+- LangChain Qdrant stores Document.metadata under the `metadata` payload key.
+- Tenant/document/status filters now use metadata.tenant_id, metadata.document_id, and metadata.policy_status.
+- Policy chunk counts in the admin dashboard now use the same correct filter.
+- Archive, restore, and delete update/delete the actual LangChain metadata payload.
+- Legacy migration helper now writes tenant_id into metadata.
+
+2026-08-14 - Backward-compatible Qdrant tenant filtering
+- Policy retrieval and dashboard counts now accept both metadata.tenant_id and legacy top-level tenant_id payload layouts.
+- Policy lifecycle operations accept both metadata.document_id and legacy document_id layouts.
+- Explicit archived/processing/failed policies are excluded in either payload layout.
+- Points without a tenant ID are never returned, preserving tenant isolation.

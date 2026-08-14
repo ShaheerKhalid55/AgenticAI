@@ -12,10 +12,13 @@ class MongoService:
         self.sessions = self.db[SESSIONS_COLLECTION]
         self.users = self.db["users"]
         self.companies = self.db["companies"]
+        self.documents = self.db["policy_documents"]
 
         self.users.create_index("email", unique=True)
         self.users.create_index([("tenant_id", 1), ("email", 1)])
         self.companies.create_index("id", unique=True)
+        self.documents.create_index([("tenant_id", 1), ("name", 1), ("version", -1)])
+        self.documents.create_index([("tenant_id", 1), ("status", 1), ("uploaded_at", -1)])
         self.sessions.create_index([("tenant_id", 1), ("user_id", 1), ("updated_at", -1)])
         self.sessions.create_index(
             [("tenant_id", 1), ("user_id", 1), ("thread_id", 1)],

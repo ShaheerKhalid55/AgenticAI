@@ -1126,21 +1126,21 @@ document.addEventListener("DOMContentLoaded", () => {
   const adminFileInput = $("adminFileInput");
   const uploadPoliciesButton = $("uploadPoliciesButton");
 
-  function closeUserModal() {
-    userModal?.classList.add("hidden");
-    userModal?.setAttribute("aria-hidden", "true");
-    adminUserForm?.reset();
-    const error = $("userFormError");
-    error?.classList.add("hidden");
-    if (error) error.textContent = "";
-  }
+function closeUserModal() {
+  userModal?.classList.add("hidden");
+  if (userModal) userModal.inert = true;
+  adminUserForm?.reset();
+  const error = $("userFormError");
+  error?.classList.add("hidden");
+  if (error) error.textContent = "";
+}
 
-  function showUserModal() {
-    if (!state.user || state.user.role !== "company_admin") return;
-    userModal?.classList.remove("hidden");
-    userModal?.setAttribute("aria-hidden", "false");
-    setTimeout(() => $("adminUserName")?.focus(), 0);
-  }
+function showUserModal() {
+  if (!state.user || state.user.role !== "company_admin") return;
+  userModal?.classList.remove("hidden");
+  if (userModal) userModal.inert = false;
+  setTimeout(() => $("adminUserName")?.focus(), 0);
+}
 
   function showAdminDashboard() {
     if (!state.user || state.user.role !== "company_admin") return;
@@ -1174,14 +1174,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const errorBox = $("adminError");
     errorBox?.classList.add("hidden");
     try {
-      const [overviewResponse, usersResponse] = await Promise.all([
+      const [overviewResponse, usersResponse, documentsResponse] = await Promise.all([
         authFetch(`${API}/api/admin/overview`),
-        authFetch(`${API}/api/admin/users`)
+        authFetch(`${API}/api/admin/users`),
+        authFetch(`${API}/api/documents`)
       ]);
       const overview = await overviewResponse.json();
       const users = await usersResponse.json();
+      const documents = await documentsResponse.json();
       if (!overviewResponse.ok) throw new Error(overview.detail || "Unable to load dashboard");
       if (!usersResponse.ok) throw new Error(users.detail || "Unable to load users");
+      if (!documentsResponse.ok) throw new Error(documents.detail || "Unable to load policy documents");
 
       $("statEmployees").textContent = overview.employees ?? 0;
       $("statUsers").textContent = overview.users ?? 0;
@@ -1193,6 +1196,7 @@ document.addEventListener("DOMContentLoaded", () => {
       $("workspaceKnowledge").textContent = `${overview.policy_chunks ?? 0} indexed chunks`;
       $("adminCompanySubtitle").textContent = `${overview.company?.name || state.user.company_name || "Company"} workspace`;
       renderUsers(users);
+      renderDocuments(documents);
     } catch (error) {
       if (errorBox) { errorBox.textContent = error.message; errorBox.classList.remove("hidden"); }
     }
@@ -1238,6 +1242,115 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  let allPolicyDocuments = [];
+
+  function formatFileSize(bytes) {
+    const value = Number(bytes || 0);
+    if (!value) return "—";
+    if (value < 1024) return `${value} B`;
+    if (value < 1024 * 1024) return `${(value / 1024).toFixed(1)} KB`;
+    return `${(value / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  function renderDocuments(documents) {
+    allPolicyDocuments = Array.isArray(documents) ? documents : [];
+    applyDocumentFilters();
+    const active = allPolicyDocuments.filter(d => d.status === "active").length;
+    const archived = allPolicyDocuments.filter(d => d.status === "archived").length;
+    const failed = allPolicyDocuments.filter(d => d.status === "failed").length;
+    const summary = $("documentSummary");
+    if (summary) summary.textContent = `${allPolicyDocuments.length} total · ${active} active · ${archived} archived${failed ? ` · ${failed} failed` : ""}`;
+  }
+
+  function applyDocumentFilters() {
+    const body = $("documentsTableBody");
+    if (!body) return;
+    const search = ($("documentSearch")?.value || "").trim().toLowerCase();
+    const status = $("documentStatusFilter")?.value || "all";
+    const documents = allPolicyDocuments.filter(doc => {
+      const matchesSearch = !search || String(doc.name || "").toLowerCase().includes(search);
+      const matchesStatus = status === "all" || doc.status === status;
+      return matchesSearch && matchesStatus;
+    });
+
+    if (!documents.length) {
+      body.innerHTML = '<tr><td colspan="8" class="empty-table">No policy documents match your filter.</td></tr>';
+      return;
+    }
+
+    body.innerHTML = documents.map(doc => {
+      const uploaded = doc.uploaded_at ? new Date(doc.uploaded_at).toLocaleString([], {dateStyle: "medium", timeStyle: "short"}) : "—";
+      const status = doc.status || "active";
+      const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
+      const tenant = String(doc.tenant_id || "—");
+      let actions = "";
+      if (status === "active") {
+        actions += `<button class="table-action" data-document-archive="${escapeHtml(doc.id)}">Archive</button>`;
+      } else if (status === "archived") {
+        actions += `<button class="table-action" data-document-restore="${escapeHtml(doc.id)}">Restore</button>`;
+      }
+      actions += `<button class="table-action danger" data-document-delete="${escapeHtml(doc.id)}">Delete</button>`;
+      return `<tr>
+        <td><strong>${escapeHtml(doc.name || "Untitled policy")}</strong><small class="document-file-meta">${formatFileSize(doc.size_bytes)}</small></td>
+        <td><span class="version-pill">v${escapeHtml(doc.version ?? 1)}</span></td>
+        <td>${escapeHtml(uploaded)}</td>
+        <td><span class="status-pill ${escapeHtml(status)}">${escapeHtml(statusLabel)}</span>${status === "failed" && doc.error ? `<small class="document-error">${escapeHtml(doc.error)}</small>` : ""}</td>
+        <td>${escapeHtml(doc.pages ?? 0)}</td>
+        <td>${escapeHtml(doc.chunks ?? 0)}</td>
+        <td><code title="${escapeHtml(tenant)}">${escapeHtml(tenant.length > 14 ? `${tenant.slice(0, 14)}…` : tenant)}</code></td>
+        <td class="document-actions">${actions}</td>
+      </tr>`;
+    }).join("");
+
+    body.querySelectorAll("[data-document-archive]").forEach(button => {
+      button.addEventListener("click", () => changeDocumentStatus(button.dataset.documentArchive, "archive"));
+    });
+    body.querySelectorAll("[data-document-restore]").forEach(button => {
+      button.addEventListener("click", () => changeDocumentStatus(button.dataset.documentRestore, "restore"));
+    });
+    body.querySelectorAll("[data-document-delete]").forEach(button => {
+      button.addEventListener("click", () => deletePolicyDocument(button.dataset.documentDelete));
+    });
+  }
+
+  async function loadPolicyDocuments() {
+    if (!state.token || state.user?.role !== "company_admin") return;
+    const response = await authFetch(`${API}/api/documents`);
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.detail || "Unable to load policy documents");
+    renderDocuments(result);
+  }
+
+  async function changeDocumentStatus(documentId, action) {
+    const verb = action === "archive" ? "archive" : "restore";
+    const message = action === "archive"
+      ? "Archive this policy version? Employees will no longer receive it in policy answers."
+      : "Restore this policy version? It will become the active version for this policy name.";
+    if (!window.confirm(message)) return;
+    try {
+      const response = await authFetch(`${API}/api/documents/${encodeURIComponent(documentId)}/${verb}`, { method: "PATCH" });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.detail || `Unable to ${verb} policy`);
+      await loadAdminDashboard();
+    } catch (error) {
+      const errorBox = $("adminError");
+      if (errorBox) { errorBox.textContent = error.message; errorBox.classList.remove("hidden"); }
+    }
+  }
+
+  async function deletePolicyDocument(documentId) {
+    if (!window.confirm("Permanently delete this policy version and its indexed vectors? This cannot be undone.")) return;
+    try {
+      const response = await authFetch(`${API}/api/documents/${encodeURIComponent(documentId)}`, { method: "DELETE" });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.detail || "Unable to delete policy");
+      await loadAdminDashboard();
+    } catch (error) {
+      const errorBox = $("adminError");
+      if (errorBox) { errorBox.textContent = error.message; errorBox.classList.remove("hidden"); }
+    }
+  }
+
   function escapeHtml(value) {
     return String(value).replace(/[&<>'"]/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[char]));
   }
@@ -1246,6 +1359,9 @@ document.addEventListener("DOMContentLoaded", () => {
   assistantNavButton?.addEventListener("click", showAssistant);
   backToAssistant?.addEventListener("click", hideAdminDashboard);
   refreshAdmin?.addEventListener("click", loadAdminDashboard);
+  $("refreshDocuments")?.addEventListener("click", loadPolicyDocuments);
+  $("documentSearch")?.addEventListener("input", applyDocumentFilters);
+  $("documentStatusFilter")?.addEventListener("change", applyDocumentFilters);
   addUserButton?.addEventListener("click", showUserModal);
   closeUserModalButton?.addEventListener("click", closeUserModal);
   cancelUserModal?.addEventListener("click", closeUserModal);
@@ -1294,7 +1410,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const response = await authFetch(`${API}/api/documents/upload`, { method: "POST", body: form });
       const result = await response.json();
       if (!response.ok) throw new Error(result.detail || "Upload failed");
-      status.textContent = `Uploaded ${result.documents} PDF(s), ${result.chunks} chunks indexed.`;
+      status.textContent = `Uploaded ${result.documents} policy version(s), ${result.chunks} chunks indexed.`;
       adminFileInput.value = "";
       await loadAdminDashboard();
     } catch (error) {
