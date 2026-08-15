@@ -1,4 +1,4 @@
-console.log("%c AI Assistant JS v20260814 LOADED ","background:#101e3b;color:white;padding:6px;border-radius:5px;font-weight:bold");
+console.log("%c AI Assistant JS v20260815 STATUS LOADED ","background:#101e3b;color:white;padding:6px;border-radius:5px;font-weight:bold");
 document.addEventListener("DOMContentLoaded", () => {
   const API = "";
 
@@ -203,6 +203,11 @@ document.addEventListener("DOMContentLoaded", () => {
     working.classList.toggle("hidden", !visible);
   }
 
+  function setThinkingStatus(text) {
+    const label = document.querySelector("#thinkingMessage .thinking-label");
+    if (label && text) label.textContent = text;
+  }
+
   // =========================================================
   // TEXT-TO-SPEECH
   // Speaks only newly generated assistant responses.
@@ -305,8 +310,10 @@ document.addEventListener("DOMContentLoaded", () => {
     input.value = "";
     resizeInput();
 
-    // Show animated thinking while the backend is working.
+    // Start with an animated status bubble. The backend will change this
+    // between KB retrieval, tool usage, and normal LLM thinking.
     showThinking();
+    setThinkingStatus("Searching knowledge base");
     setWorking("", false);
 
     let bubble = null;
@@ -408,12 +415,18 @@ document.addEventListener("DOMContentLoaded", () => {
             try {
               const event = JSON.parse(payload);
 
-              if (event.type === "tool") {
-                // Keep thinking visible while tools are running.
+              if (event.type === "status") {
                 if (!bubble) {
-                  setWorking(
-                    event.label || `Using ${event.tool || "tool"}...`,
-                    false
+                  setThinkingStatus(event.label || "Thinking");
+                }
+                continue;
+              }
+
+              if (event.type === "tool") {
+                // Tool calls temporarily replace the normal Thinking label.
+                if (!bubble) {
+                  setThinkingStatus(
+                    event.label || `Using ${event.tool || "tool"}...`
                   );
                 }
                 continue;

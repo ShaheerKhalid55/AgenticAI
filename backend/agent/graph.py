@@ -38,44 +38,40 @@ class AgentState(TypedDict):
 
 SYSTEM_PROMPT = SystemMessage(
     content=(
-        "You are a general-purpose AI assistant for an organization. "
-        "You have access to a tenant-specific knowledge base containing documents uploaded by the current company. "
-        "You are NOT restricted to HR topics. You can answer technical, business, educational, operational, "
-        "programming, documentation, and other questions.\n\n"
-        "KNOWLEDGE BASE BEHAVIOR:\n"
-        "- When the user's question could be answered by information in the company's uploaded documents, "
-        "you MUST call the 'search_knowledge_base' tool before answering.\n"
-        "- If the retrieved passages are relevant, use them as the primary source for company/document-specific facts.\n"
-        "- If no relevant passages are found, answer using your general model knowledge when you can do so reliably.\n"
-        "- If the knowledge base is empty, you may answer from general model knowledge instead of refusing the question.\n"
-        "- Never invent, guess, or fabricate a document citation.\n"
-        "- Never claim that information came from an uploaded document unless the search tool actually returned it.\n\n"
-        "CITATIONS:\n"
-        "- Whenever you use information from an uploaded document, cite the exact source document filename and page number "
-        "provided by the search tool.\n"
-        "- If multiple documents are used, cite each relevant document and page.\n"
-        "- For general model knowledge that did not come from the uploaded documents, do not create a fake citation. "
-        "When useful, explicitly say that the statement is based on general knowledge.\n\n"
-        "SOURCE PRIORITY:\n"
-        "- For organization-specific facts, uploaded documents take priority over general model knowledge.\n"
-        "- For general facts not covered by the uploaded documents, use your model knowledge.\n"
-        "- If the uploaded documents conflict with general knowledge about the organization's own rules, configuration, "
-        "procedures, or standards, follow the organization's documents and cite them.\n\n"
-        "UNCERTAINTY / HALLUCINATION CONTROL:\n"
-        "- If neither the uploaded documents nor your general knowledge provides enough reliable information, say "
-        "that you do not know or that there is not enough information to answer reliably.\n"
-        "- Do not make up facts simply to provide an answer.\n\n"
+        "You are a general-purpose AI assistant for the current organization. "
+        "You can answer questions about any topic; you are not restricted to HR.\n\n"
+        "MANDATORY KNOWLEDGE-BASE-FIRST WORKFLOW:\n"
+        "1. A tenant knowledge-base search is performed BEFORE you receive the question for answering. "
+        "You MUST inspect the injected 'KNOWLEDGE BASE SEARCH RESULT' before drafting or giving an answer. "
+        "Do not answer from model knowledge before reviewing that result. If you need an additional search after reviewing it, "
+        "you may call 'search_knowledge_base'.\n"
+        "2. Examine the returned passages carefully and decide whether they actually contain enough information to answer the question. "
+        "Do not treat merely similar words as evidence that the document answers the question.\n"
+        "3. If the retrieved company-document content contains the answer, answer from that content first. "
+        "For company-specific facts, the uploaded documents are authoritative.\n"
+        "4. If the retrieved content does NOT contain enough information to answer the question, you MAY use your general model knowledge as a fallback. "
+        "When you do this, you MUST clearly begin the answer with: 'Based on my general LLM knowledge (not found in the uploaded company documents):' "
+        "Do not present general model knowledge as if it came from a company document.\n"
+        "5. If the question requires company-specific information and the knowledge-base search does not contain it, say that the information was not found in the uploaded company documents rather than inventing a company-specific answer. "
+        "General model knowledge may still be provided only when it is useful and clearly labeled as general LLM knowledge.\n\n"
+        "DOCUMENT CITATIONS:\n"
+        "- Whenever you use information from an uploaded document, cite the exact Source Document filename and Location Reference page returned by the search tool.\n"
+        "- Never invent a document name, page number, or citation.\n"
+        "- If several documents are relevant, cite each one.\n"
+        "- If you use both company documents and general LLM knowledge, clearly separate the two sources.\n\n"
+        "EXAMPLE BEHAVIOR:\n"
+        "User asks about a topic covered by an uploaded Node.js document -> search the document -> answer from the document and cite it.\n"
+        "User asks a general question not covered by the uploaded document -> search the document first -> if no relevant answer is found, use the LLM and start with the required general-knowledge label.\n"
+        "User asks for a company-specific rule not found in the documents -> say it was not found in the company documents; do not invent the rule.\n\n"
+        "HALLUCINATION CONTROL:\n"
+        "- Never fabricate document content or citations.\n"
+        "- Never claim that a document says something unless the retrieved passage supports it.\n"
+        "- If neither the documents nor your general knowledge is sufficient, say you do not know.\n\n"
         "LONG-TERM MEMORY:\n"
-        "- You also have memory tools backed by persistent storage. Use them when relevant to remember durable, "
-        "non-sensitive information shared by the user.\n"
-        "- Do not store policy/document content as personal memory.\n"
-        "- Never store sensitive personal data such as passwords, SSNs, medical details, or financial account information.\n\n"
+        "Use memory tools only for relevant durable, non-sensitive user information. Do not store policy/document content as personal memory.\n\n"
         "WEB DOCUMENTS:\n"
-        "- You have a fetch tool for URLs supplied by the user. Use it when the user asks about a specific URL or "
-        "online document that is not available in the tenant knowledge base. Tell the user when information came from "
-        "the fetched URL.\n"
-        "Answer naturally and helpfully. Do not describe yourself as an HR assistant unless the user explicitly asks "
-        "about an HR-specific role."
+        "You may use the fetch tool when the user explicitly provides or asks about a URL. Tell the user when information came from the fetched URL.\n\n"
+        "Always perform the knowledge-base search first. Then answer naturally based on the evidence available. Do not describe yourself as an HR assistant unless the user explicitly asks about an HR-specific role."
     )
 )
 
@@ -129,16 +125,17 @@ class AgentService:
         @tool
         def search_knowledge_base(query: str, config: RunnableConfig) -> str:
             """
-            Search the current company's uploaded knowledge base for passages
+            Search the current company's uploaded knowledge base FIRST for passages
             relevant to the user's question. Results include source filenames
-            and page numbers for citations.
+            and page numbers for citations. The assistant must inspect these
+            results before using general LLM knowledge.
             """
             retriever = config.get("configurable", {}).get("retriever_instance")
             if retriever is None:
                 return (
-                    "No company documents are currently indexed. "
-                    "There is no document evidence for this question; "
-                    "the assistant may use general model knowledge."
+                    "NO_KB_EVIDENCE: No company documents are currently indexed. "
+                    "The assistant may use general LLM knowledge, but MUST label it "
+                    "with the required general-knowledge disclaimer."
                 )
 
             try:
@@ -170,7 +167,9 @@ class AgentService:
             return (
                 "\n\n".join(formatted)
                 if formatted
-                else "No relevant company-document passages were found."
+                else "NO_KB_EVIDENCE: No relevant company-document passages were found. "
+                "The assistant may use general LLM knowledge, but MUST label it "
+                "with the required general-knowledge disclaimer."
             )
 
         self.tools = [search_knowledge_base]
@@ -201,6 +200,66 @@ class AgentService:
         self.graph = workflow.compile(**kwargs)
 
     def agent_node(self, state: AgentState, config: RunnableConfig):
+        # IMPORTANT: perform the tenant knowledge-base search BEFORE the LLM
+        # gets a chance to answer. This guarantees the requested
+        # "knowledge base first, LLM fallback second" behavior.
+        retriever = config.get("configurable", {}).get("retriever_instance")
+        user_message = next(
+            (m for m in reversed(state["messages"]) if isinstance(m, HumanMessage)),
+            None,
+        )
+        query = extract_text(getattr(user_message, "content", None)) if user_message else ""
+
+        if retriever is None:
+            kb_context = (
+                "NO_KB_EVIDENCE: The current tenant has no indexed documents.\n"
+                "The LLM may answer from general knowledge, but it MUST begin with the required "
+                "general-knowledge disclaimer."
+            )
+        else:
+            try:
+                docs = retriever.invoke(query)
+                formatted = []
+                for idx, doc in enumerate(docs, 1):
+                    filename = doc.metadata.get("source", "Unknown Document")
+                    raw_page = doc.metadata.get("page")
+                    try:
+                        page_num = int(raw_page) + 1
+                    except (TypeError, ValueError):
+                        page_num = raw_page or "Unknown"
+                    content = (doc.page_content or "").strip()
+                    if not content:
+                        continue
+                    formatted.append(
+                        f"[KB Result {idx}]\n"
+                        f"Source Document: {filename}\n"
+                        f"Location Reference: Page {page_num}\n"
+                        f"Content excerpt:\n{content}"
+                    )
+                kb_context = (
+                    "\n\n".join(formatted)
+                    if formatted
+                    else
+                    "NO_KB_EVIDENCE: The knowledge-base search returned no usable passages. "
+                    "The LLM may answer from general knowledge, but it MUST begin with the required "
+                    "general-knowledge disclaimer."
+                )
+            except Exception as exc:
+                kb_context = (
+                    f"NO_KB_EVIDENCE: Knowledge-base search failed ({exc}). "
+                    "Do not claim document evidence. The LLM may answer from general knowledge only "
+                    "with the required general-knowledge disclaimer."
+                )
+
+        kb_message = SystemMessage(
+            content=(
+                "KNOWLEDGE BASE SEARCH RESULT — THIS WAS RETRIEVED BEFORE YOUR ANSWER:\n"
+                + kb_context
+                + "\n\nUse this evidence first. If it does not actually answer the user's question, "
+                "fall back to general LLM knowledge and use the exact required disclaimer."
+            )
+        )
+
         model = ChatOllama(
             model=OLLAMA_LLM_MODEL,
             base_url=OLLAMA_CLOUD_HOST,
@@ -208,7 +267,7 @@ class AgentService:
             temperature=0.3,
         )
         response = model.bind_tools(self.tools).invoke(
-            [SYSTEM_PROMPT] + list(state["messages"]),
+            [SYSTEM_PROMPT, kb_message] + list(state["messages"]),
             config=config,
         )
         return {"messages": [response]}
@@ -226,6 +285,12 @@ class AgentService:
         input_state = {"messages": [HumanMessage(content=user_query)]}
         got_text = False
 
+        # Status lifecycle for the frontend. The KB-first agent performs the
+        # tenant retrieval before asking the LLM to answer. Tell the UI what
+        # is happening instead of leaving it on a generic "Thinking" state.
+        yield {"type": "status", "status": "searching_kb",
+               "label": "🔎 Searching knowledge base"}
+
         async for stream_mode, payload in self.graph.astream(
             input_state,
             config=config,
@@ -233,15 +298,20 @@ class AgentService:
         ):
             if stream_mode == "updates":
                 for node_name, node_update in (payload or {}).items():
-                    if node_name != "tools":
-                        continue
-                    for message in node_update.get("messages", []):
-                        tool_name = getattr(message, "name", None)
-                        if tool_name:
-                            yield {
-                                "type": "tool",
-                                "tool": tool_name,
-                            }
+                    if node_name == "tools":
+                        for message in node_update.get("messages", []):
+                            tool_name = getattr(message, "name", None)
+                            if tool_name:
+                                yield {
+                                    "type": "tool",
+                                    "tool": tool_name,
+                                }
+                    elif node_name == "agent":
+                        # The agent node runs after KB retrieval and/or after
+                        # a tool call, so the UI can return to the normal
+                        # animated Thinking state here.
+                        yield {"type": "status", "status": "thinking",
+                               "label": "Thinking"}
 
             elif stream_mode == "messages":
                 message_chunk, metadata = payload
