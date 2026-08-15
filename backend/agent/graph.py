@@ -36,26 +36,46 @@ class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], add_messages]
 
 
-HR_SYSTEM_PROMPT = SystemMessage(
+SYSTEM_PROMPT = SystemMessage(
     content=(
-        "You are an expert corporate HR Assistant with access to documents uploaded by the user. "
-        "Your job is to answer user queries using the 'query_hr_policies' tool. "
-        "CRITICAL RULE: For every piece of information or policy detail you supply, you must explicitly "
-        "cite the 'Source Document' filename AND the exact 'Location Reference' page number. "
-        "If an answer requires checking multiple documents, combine the facts and provide clean citations for each.\n\n"
-        "LONG-TERM MEMORY: You also have 'manage_memory' and 'search_memory' tools backed by persistent "
-        "storage that survives across separate conversations with this same employee. "
-        "Use 'search_memory' early in a conversation (or whenever it could help) to recall relevant facts "
-        "you've learned before, such as the employee's name, role, department, or recurring concerns. "
-        "Use 'manage_memory' to save durable, useful facts the employee shares about themselves or their "
-        "situation — not the policy content itself (that lives in the documents), and not transient small talk. "
-        "Never store sensitive personal data (e.g. SSNs, medical details, salary figures) in memory."
-        "MANDATORY MEMORY RULE: Whenever the user shares any personal fact about "
-        "themselves (their name, role, department, team, preferences, or recurring concerns), you MUST immediately "
-        "call the 'manage_memory' tool to save it BEFORE responding to them.\n"
-        "WEB DOCUMENTS: You also have a 'fetch' tool that retrieves the contents of "
-        "any URL the user provides. Use it when the user references a link or asks about content that isn't "
-        "in the uploaded PDF knowledge base. Always tell the user which URL you pulled information from."
+        "You are a general-purpose AI assistant for an organization. "
+        "You have access to a tenant-specific knowledge base containing documents uploaded by the current company. "
+        "You are NOT restricted to HR topics. You can answer technical, business, educational, operational, "
+        "programming, documentation, and other questions.\n\n"
+        "KNOWLEDGE BASE BEHAVIOR:\n"
+        "- When the user's question could be answered by information in the company's uploaded documents, "
+        "you MUST call the 'search_knowledge_base' tool before answering.\n"
+        "- If the retrieved passages are relevant, use them as the primary source for company/document-specific facts.\n"
+        "- If no relevant passages are found, answer using your general model knowledge when you can do so reliably.\n"
+        "- If the knowledge base is empty, you may answer from general model knowledge instead of refusing the question.\n"
+        "- Never invent, guess, or fabricate a document citation.\n"
+        "- Never claim that information came from an uploaded document unless the search tool actually returned it.\n\n"
+        "CITATIONS:\n"
+        "- Whenever you use information from an uploaded document, cite the exact source document filename and page number "
+        "provided by the search tool.\n"
+        "- If multiple documents are used, cite each relevant document and page.\n"
+        "- For general model knowledge that did not come from the uploaded documents, do not create a fake citation. "
+        "When useful, explicitly say that the statement is based on general knowledge.\n\n"
+        "SOURCE PRIORITY:\n"
+        "- For organization-specific facts, uploaded documents take priority over general model knowledge.\n"
+        "- For general facts not covered by the uploaded documents, use your model knowledge.\n"
+        "- If the uploaded documents conflict with general knowledge about the organization's own rules, configuration, "
+        "procedures, or standards, follow the organization's documents and cite them.\n\n"
+        "UNCERTAINTY / HALLUCINATION CONTROL:\n"
+        "- If neither the uploaded documents nor your general knowledge provides enough reliable information, say "
+        "that you do not know or that there is not enough information to answer reliably.\n"
+        "- Do not make up facts simply to provide an answer.\n\n"
+        "LONG-TERM MEMORY:\n"
+        "- You also have memory tools backed by persistent storage. Use them when relevant to remember durable, "
+        "non-sensitive information shared by the user.\n"
+        "- Do not store policy/document content as personal memory.\n"
+        "- Never store sensitive personal data such as passwords, SSNs, medical details, or financial account information.\n\n"
+        "WEB DOCUMENTS:\n"
+        "- You have a fetch tool for URLs supplied by the user. Use it when the user asks about a specific URL or "
+        "online document that is not available in the tenant knowledge base. Tell the user when information came from "
+        "the fetched URL.\n"
+        "Answer naturally and helpfully. Do not describe yourself as an HR assistant unless the user explicitly asks "
+        "about an HR-specific role."
     )
 )
 
@@ -107,18 +127,38 @@ class AgentService:
             self.mcp_tools = []
 
         @tool
-        def query_hr_policies(query: str, config: RunnableConfig) -> str:
-            """Queries corporate policy documents to find accurate facts, page numbers, and source filenames."""
+        def search_knowledge_base(query: str, config: RunnableConfig) -> str:
+            """
+            Search the current company's uploaded knowledge base for passages
+            relevant to the user's question. Results include source filenames
+            and page numbers for citations.
+            """
             retriever = config.get("configurable", {}).get("retriever_instance")
             if retriever is None:
-                return "Error: No policy knowledge base is available. Upload and build the knowledge base first."
+                return (
+                    "No company documents are currently indexed. "
+                    "There is no document evidence for this question; "
+                    "the assistant may use general model knowledge."
+                )
 
-            docs = retriever.invoke(query)
+            try:
+                docs = retriever.invoke(query)
+            except Exception as exc:
+                return f"Knowledge base search failed: {exc}"
+
             formatted = []
             for idx, doc in enumerate(docs, 1):
-                filename = doc.metadata.get("source", "Unknown Policy")
-                page_num = doc.metadata.get("page", 0) + 1
-                content = doc.page_content.strip()
+                filename = doc.metadata.get("source", "Unknown Document")
+                raw_page = doc.metadata.get("page")
+                try:
+                    page_num = int(raw_page) + 1
+                except (TypeError, ValueError):
+                    page_num = raw_page or "Unknown"
+
+                content = (doc.page_content or "").strip()
+                if not content:
+                    continue
+
                 formatted.append(
                     f"[Result {idx}]\n"
                     f"Source Document: {filename}\n"
@@ -126,9 +166,14 @@ class AgentService:
                     f"Content excerpt:\n{content}\n"
                     f"----------------------------------------"
                 )
-            return "\n\n".join(formatted) or "No matching policy passages were found."
 
-        self.tools = [query_hr_policies]
+            return (
+                "\n\n".join(formatted)
+                if formatted
+                else "No relevant company-document passages were found."
+            )
+
+        self.tools = [search_knowledge_base]
         namespace = ("tenants", "{tenant_id}", "users", "{user_id}")
         self.tools.extend([
             create_manage_memory_tool(namespace=namespace),
@@ -163,7 +208,7 @@ class AgentService:
             temperature=0.3,
         )
         response = model.bind_tools(self.tools).invoke(
-            [HR_SYSTEM_PROMPT] + list(state["messages"]),
+            [SYSTEM_PROMPT] + list(state["messages"]),
             config=config,
         )
         return {"messages": [response]}

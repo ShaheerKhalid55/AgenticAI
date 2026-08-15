@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Assistant</title>
+  <title>Knowledge Assistant</title>
   <link rel="stylesheet" href="/css/styles.css?v=20260813">
 </head>
 <body>
@@ -11,7 +11,7 @@
   <div id="authScreen" class="auth-screen">
     <div class="auth-card">
       <div class="auth-logo">HR</div>
-      <h1>AI Assistant</h1>
+      <h1>Knowledge Assistant</h1>
       <p class="auth-subtitle">Sign in to your company workspace</p>
 
       <div id="loginView">
@@ -59,7 +59,7 @@
           </svg>
         </div>
         <div>
-          <div class="brand-title">AI Assistant</div>
+          <div class="brand-title">Knowledge Assistant</div>
           <div class="brand-subtitle">Your AI guide</div>
         </div>
       </div>
@@ -107,7 +107,7 @@
         <nav class="sidebar-nav" aria-label="Application navigation">
           <button id="assistantNavButton" class="sidebar-nav-button active" type="button">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4V5z"/><path d="M8 9h8M8 12h5"/></svg>
-            <span>AI Assistant</span>
+            <span>Knowledge Assistant</span>
           </button>
           <button id="adminNavButton" class="sidebar-nav-button admin-nav-button hidden" type="button">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V9l8-5 8 5v11H4z"/><path d="M9 20v-6h6v6M8 10h1M12 10h1M16 10h1"/></svg>
@@ -208,8 +208,8 @@
             </svg>
           </div>
           <div>
-            <h1>AI Assistant</h1>
-            <p>Ask anything — answers are cited to the exact document and page.</p>
+            <h1>Knowledge Assistant</h1>
+            <p>Ask anything — answers use your company documents when relevant and can also use general AI knowledge.</p>
           </div>
         </div>
 
@@ -277,7 +277,7 @@
       <div class="admin-stats">
         <div class="stat-card"><span>Employees</span><strong id="statEmployees">—</strong><small>Company employees</small></div>
         <div class="stat-card"><span>Total users</span><strong id="statUsers">—</strong><small>All workspace users</small></div>
-        <div class="stat-card"><span>Policy chunks</span><strong id="statPolicies">—</strong><small>Indexed knowledge</small></div>
+        <div class="stat-card"><span>Knowledge chunks</span><strong id="statPolicies">—</strong><small>Indexed knowledge</small></div>
         <div class="stat-card"><span>Conversations</span><strong id="statConversations">—</strong><small>Workspace chats</small></div>
       </div>
 
@@ -296,7 +296,7 @@
         </section>
 
         <section class="admin-card workspace-card">
-          <div class="admin-card-heading"><div><h2>Workspace</h2><p>Company information and policy management.</p></div></div>
+          <div class="admin-card-heading"><div><h2>Workspace</h2><p>Company information and knowledge management.</p></div></div>
           <div class="workspace-detail"><span>Company</span><strong id="workspaceName">—</strong></div>
           <div class="workspace-detail"><span>Status</span><strong id="workspaceStatus">—</strong></div>
           <div class="workspace-detail"><span>Workspace ID</span><code id="workspaceId">—</code></div>
@@ -315,16 +315,16 @@
         <div class="admin-card-heading">
           <div>
             <h2>Document Library</h2>
-            <p>Manage versions, publishing status, and policy ownership for this workspace.</p>
+            <p>Manage document versions, publishing status, and knowledge sources for this workspace.</p>
           </div>
           <div class="document-library-actions">
-            <span id="documentSummary" class="document-summary">Loading policies…</span>
+            <span id="documentSummary" class="document-summary">Loading documents…</span>
             <button id="refreshDocuments" class="admin-secondary" type="button">↻ Refresh</button>
           </div>
         </div>
         <div class="document-filters">
-          <input id="documentSearch" type="search" placeholder="Search policy documents…" aria-label="Search policy documents">
-          <select id="documentStatusFilter" aria-label="Filter policy status">
+          <input id="documentSearch" type="search" placeholder="Search documents…" aria-label="Search documents">
+          <select id="documentStatusFilter" aria-label="Filter document status">
             <option value="all">All statuses</option>
             <option value="active">Active</option>
             <option value="archived">Archived</option>
@@ -334,7 +334,7 @@
         <div class="table-wrap">
           <table class="documents-table">
             <thead>
-              <tr><th>Policy</th><th>Version</th><th>Uploaded</th><th>Status</th><th>Pages</th><th>Chunks</th><th>Tenant</th><th>Actions</th></tr>
+              <tr><th>Document</th><th>Version</th><th>Uploaded</th><th>Status</th><th>Pages</th><th>Chunks</th><th>Tenant</th><th>Actions</th></tr>
             </thead>
             <tbody id="documentsTableBody"><tr><td colspan="8" class="empty-table">Loading policy library…</td></tr></tbody>
           </table>

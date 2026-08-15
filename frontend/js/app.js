@@ -1,4 +1,4 @@
-console.log("%c HR Policy Assistant JS v20260813 LOADED ","background:#101e3b;color:white;padding:6px;border-radius:5px;font-weight:bold");
+console.log("%c AI Assistant JS v20260814 LOADED ","background:#101e3b;color:white;padding:6px;border-radius:5px;font-weight:bold");
 document.addEventListener("DOMContentLoaded", () => {
   const API = "";
 
@@ -765,7 +765,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const form = new FormData();
     [...fileInput.files].forEach((file) => form.append("files", file));
 
-    setWorking("Processing policy documents...", true);
+    setWorking("Processing documents...", true);
 
     try {
       const response = await authFetch(`${API}/api/documents/upload`, {
@@ -1184,7 +1184,7 @@ function showUserModal() {
       const documents = await documentsResponse.json();
       if (!overviewResponse.ok) throw new Error(overview.detail || "Unable to load dashboard");
       if (!usersResponse.ok) throw new Error(users.detail || "Unable to load users");
-      if (!documentsResponse.ok) throw new Error(documents.detail || "Unable to load policy documents");
+      if (!documentsResponse.ok) throw new Error(documents.detail || "Unable to load documents");
 
       $("statEmployees").textContent = overview.employees ?? 0;
       $("statUsers").textContent = overview.users ?? 0;
@@ -1274,7 +1274,7 @@ function showUserModal() {
     });
 
     if (!documents.length) {
-      body.innerHTML = '<tr><td colspan="8" class="empty-table">No policy documents match your filter.</td></tr>';
+      body.innerHTML = '<tr><td colspan="8" class="empty-table">No documents match your filter.</td></tr>';
       return;
     }
 
@@ -1291,7 +1291,7 @@ function showUserModal() {
       }
       actions += `<button class="table-action danger" data-document-delete="${escapeHtml(doc.id)}">Delete</button>`;
       return `<tr>
-        <td><strong>${escapeHtml(doc.name || "Untitled policy")}</strong><small class="document-file-meta">${formatFileSize(doc.size_bytes)}</small></td>
+        <td><strong>${escapeHtml(doc.name || "Untitled document")}</strong><small class="document-file-meta">${formatFileSize(doc.size_bytes)}</small></td>
         <td><span class="version-pill">v${escapeHtml(doc.version ?? 1)}</span></td>
         <td>${escapeHtml(uploaded)}</td>
         <td><span class="status-pill ${escapeHtml(status)}">${escapeHtml(statusLabel)}</span>${status === "failed" && doc.error ? `<small class="document-error">${escapeHtml(doc.error)}</small>` : ""}</td>
@@ -1317,15 +1317,15 @@ function showUserModal() {
     if (!state.token || state.user?.role !== "company_admin") return;
     const response = await authFetch(`${API}/api/documents`);
     const result = await response.json();
-    if (!response.ok) throw new Error(result.detail || "Unable to load policy documents");
+    if (!response.ok) throw new Error(result.detail || "Unable to load documents");
     renderDocuments(result);
   }
 
   async function changeDocumentStatus(documentId, action) {
     const verb = action === "archive" ? "archive" : "restore";
     const message = action === "archive"
-      ? "Archive this policy version? Employees will no longer receive it in policy answers."
-      : "Restore this policy version? It will become the active version for this policy name.";
+      ? "Archive this document version? It will no longer be used as an active knowledge source."
+      : "Restore this document version? It will become the active version for this document name.";
     if (!window.confirm(message)) return;
     try {
       const response = await authFetch(`${API}/api/documents/${encodeURIComponent(documentId)}/${verb}`, { method: "PATCH" });
@@ -1339,11 +1339,11 @@ function showUserModal() {
   }
 
   async function deletePolicyDocument(documentId) {
-    if (!window.confirm("Permanently delete this policy version and its indexed vectors? This cannot be undone.")) return;
+    if (!window.confirm("Permanently delete this document version and its indexed vectors? This cannot be undone.")) return;
     try {
       const response = await authFetch(`${API}/api/documents/${encodeURIComponent(documentId)}`, { method: "DELETE" });
       const result = await response.json();
-      if (!response.ok) throw new Error(result.detail || "Unable to delete policy");
+      if (!response.ok) throw new Error(result.detail || "Unable to delete document");
       await loadAdminDashboard();
     } catch (error) {
       const errorBox = $("adminError");
@@ -1410,7 +1410,7 @@ function showUserModal() {
       const response = await authFetch(`${API}/api/documents/upload`, { method: "POST", body: form });
       const result = await response.json();
       if (!response.ok) throw new Error(result.detail || "Upload failed");
-      status.textContent = `Uploaded ${result.documents} policy version(s), ${result.chunks} chunks indexed.`;
+      status.textContent = `Uploaded ${result.documents} document(s), ${result.chunks} chunks indexed.`;
       adminFileInput.value = "";
       await loadAdminDashboard();
     } catch (error) {

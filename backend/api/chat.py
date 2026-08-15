@@ -8,7 +8,7 @@ from ..models.api_models import ChatRequest
 router = APIRouter(prefix="/api/chat", tags=["chat"])
 
 TOOL_LABELS = {
-    "query_hr_policies": "📄 Searching policy documents...",
+    "search_knowledge_base": "🔎 Searching company documents...",
     "manage_memory": "🧠 Saving a memory...",
     "search_memory": "🧠 Recalling memories...",
     "fetch": "🌐 Fetching web page...",
@@ -22,9 +22,9 @@ async def chat(request: ChatRequest, current_user: dict = Depends(get_current_us
     if request.user_id != current_user["sub"]:
         raise HTTPException(403, "You can only access your own chats")
 
+    # The knowledge base is optional. If this tenant has no indexed
+    # documents, the agent can still answer using general model knowledge.
     retriever = services.qdrant.policy_retriever(current_user["tenant_id"])
-    if retriever is None:
-        raise HTTPException(400, "Knowledge base is empty. Upload and build policy documents first.")
 
     services.mongo.create_session(current_user["tenant_id"], current_user["sub"], request.thread_id)
 
@@ -76,10 +76,9 @@ async def chat_websocket(websocket: WebSocket, thread_id: str):
                 continue
 
             from ..main import services
+            # The knowledge base is optional. The agent can fall back
+            # to general model knowledge when no tenant documents are indexed.
             retriever = services.qdrant.policy_retriever(current_user["tenant_id"])
-            if retriever is None:
-                await websocket.send_json({"type": "error", "message": "Knowledge base is empty. Upload policy PDFs first."})
-                continue
 
             services.mongo.create_session(current_user["tenant_id"], current_user["sub"], thread_id)
             config = {
