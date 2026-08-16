@@ -106,36 +106,36 @@ class QdrantService:
         )
 
     @classmethod
-    def _active_policy_filter(cls, tenant_id: str):
-        return qmodels.Filter(
-            must=[cls._tenant_condition(tenant_id)],
-            must_not=[
-                qmodels.FieldCondition(
-                    key="metadata.policy_status",
-                    match=qmodels.MatchValue(value="archived"),
-                ),
-                qmodels.FieldCondition(
-                    key="metadata.policy_status",
-                    match=qmodels.MatchValue(value="processing"),
-                ),
-                qmodels.FieldCondition(
-                    key="metadata.policy_status",
-                    match=qmodels.MatchValue(value="failed"),
-                ),
-                qmodels.FieldCondition(
-                    key="policy_status",
-                    match=qmodels.MatchValue(value="archived"),
-                ),
-                qmodels.FieldCondition(
-                    key="policy_status",
-                    match=qmodels.MatchValue(value="processing"),
-                ),
-                qmodels.FieldCondition(
-                    key="policy_status",
-                    match=qmodels.MatchValue(value="failed"),
-                ),
-            ],
-        )
+    def _active_policy_filter(cls, tenant_id: str, active_document_ids=None):
+        """Strictly match only currently published vectors."""
+        must = [
+            cls._tenant_condition(tenant_id),
+            qmodels.FieldCondition(
+                key="metadata.policy_status",
+                match=qmodels.MatchValue(value="active"),
+            ),
+        ]
+
+        if active_document_ids is not None:
+            ids = [str(value) for value in active_document_ids if value]
+            if not ids:
+                ids = ["__NO_ACTIVE_DOCUMENTS__"]
+            must.append(
+                qmodels.Filter(
+                    min_should=qmodels.MinShould(
+                        conditions=[
+                            qmodels.FieldCondition(
+                                key="metadata.document_id",
+                                match=qmodels.MatchValue(value=document_id),
+                            )
+                            for document_id in ids
+                        ],
+                        min_count=1,
+                    )
+                )
+            )
+
+        return qmodels.Filter(must=must)
 
     def policy_store(self, tenant_id: str):
         if not self.client.collection_exists(POLICY_COLLECTION):
@@ -148,7 +148,7 @@ class QdrantService:
             validate_collection_config=False,
         )
 
-    def policy_retriever(self, tenant_id: str, k: int = 4):
+    def policy_retriever(self, tenant_id: str, k: int = 4, active_document_ids=None):
         store = self.policy_store(tenant_id)
         if not store:
             return None
@@ -156,7 +156,10 @@ class QdrantService:
         return store.as_retriever(
             search_kwargs={
                 "k": k,
-                "filter": self._active_policy_filter(tenant_id),
+                "filter": self._active_policy_filter(
+                    tenant_id,
+                    active_document_ids=active_document_ids,
+                ),
             }
         )
 
@@ -239,12 +242,32 @@ class QdrantService:
                 })
                 self.client.set_payload(
                     collection_name=POLICY_COLLECTION,
-                    payload={"metadata": metadata},
+                    payload={
+                        "metadata": metadata,
+                        "tenant_id": tenant_id,
+                        "document_id": document_id,
+                        "policy_status": status,
+                    },
                     points=[record.id],
                 )
 
             if offset is None:
                 break
+
+    def count_policy_document(self, tenant_id: str, document_id: str) -> int:
+        if not self.client.collection_exists(POLICY_COLLECTION):
+            return 0
+        result = self.client.count(
+            collection_name=POLICY_COLLECTION,
+            count_filter=qmodels.Filter(
+                must=[
+                    self._tenant_condition(tenant_id),
+                    self._document_condition(document_id),
+                ]
+            ),
+            exact=True,
+        )
+        return int(result.count)
 
     def delete_policy_document(self, tenant_id: str, document_id: str):
         if not self.client.collection_exists(POLICY_COLLECTION):

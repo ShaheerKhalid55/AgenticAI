@@ -22,9 +22,17 @@ async def chat(request: ChatRequest, current_user: dict = Depends(get_current_us
     if request.user_id != current_user["sub"]:
         raise HTTPException(403, "You can only access your own chats")
 
-    # The knowledge base is optional. If this tenant has no indexed
-    # documents, the agent can still answer using general model knowledge.
-    retriever = services.qdrant.policy_retriever(current_user["tenant_id"])
+    # Only MongoDB-active document IDs are eligible, and Qdrant additionally
+    # requires each vector's metadata.policy_status to be exactly "active".
+    active_docs = services.mongo.documents.find(
+        {"tenant_id": current_user["tenant_id"], "status": "active"},
+        {"id": 1},
+    )
+    active_document_ids = [doc["id"] for doc in active_docs if doc.get("id")]
+    retriever = services.qdrant.policy_retriever(
+        current_user["tenant_id"],
+        active_document_ids=active_document_ids,
+    )
 
     services.mongo.create_session(current_user["tenant_id"], current_user["sub"], request.thread_id)
 
@@ -76,9 +84,15 @@ async def chat_websocket(websocket: WebSocket, thread_id: str):
                 continue
 
             from ..main import services
-            # The knowledge base is optional. The agent can fall back
-            # to general model knowledge when no tenant documents are indexed.
-            retriever = services.qdrant.policy_retriever(current_user["tenant_id"])
+            active_docs = services.mongo.documents.find(
+                {"tenant_id": current_user["tenant_id"], "status": "active"},
+                {"id": 1},
+            )
+            active_document_ids = [doc["id"] for doc in active_docs if doc.get("id")]
+            retriever = services.qdrant.policy_retriever(
+                current_user["tenant_id"],
+                active_document_ids=active_document_ids,
+            )
 
             services.mongo.create_session(current_user["tenant_id"], current_user["sub"], thread_id)
             config = {

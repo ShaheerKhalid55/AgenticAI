@@ -260,6 +260,43 @@ class AgentService:
             )
         )
 
+        # IMPORTANT: Do not feed previous assistant answers back to the model as
+        # authoritative context. A previous answer may contain a citation to a
+        # document that has since been archived/deleted. The fresh KB retrieval
+        # above is the only source that is allowed to establish current document
+        # evidence.
+        #
+        # We keep recent user questions for conversational continuity, but omit
+        # historical AI/tool messages. For the current turn, tool messages are
+        # retained so the agent can continue a tool-calling loop normally.
+        messages = list(state["messages"])
+        last_human_index = next(
+            (i for i in range(len(messages) - 1, -1, -1)
+             if isinstance(messages[i], HumanMessage)),
+            None,
+        )
+
+        prior_user_messages = [
+            message
+            for message in messages[:last_human_index]
+            if isinstance(message, HumanMessage)
+        ][-8:] if last_human_index is not None else []
+
+        current_turn_messages = (
+            messages[last_human_index:] if last_human_index is not None else []
+        )
+
+        conversation_context = SystemMessage(
+            content=(
+                "CONVERSATION CONTEXT RULES:\n"
+                "- Previous user questions are included only to understand conversational context.\n"
+                "- Previous assistant answers, tool outputs, and historical citations are intentionally NOT included as evidence.\n"
+                "- Never reuse a previous assistant citation as proof that a document is currently active.\n"
+                "- Only the fresh KNOWLEDGE BASE SEARCH RESULT for this turn can establish current uploaded-document evidence.\n"
+                "- If a document was archived after an earlier turn, treat it as unavailable for this answer.\n"
+            )
+        )
+
         model = ChatOllama(
             model=OLLAMA_LLM_MODEL,
             base_url=OLLAMA_CLOUD_HOST,
@@ -267,7 +304,9 @@ class AgentService:
             temperature=0.3,
         )
         response = model.bind_tools(self.tools).invoke(
-            [SYSTEM_PROMPT, kb_message] + list(state["messages"]),
+            [SYSTEM_PROMPT, conversation_context, kb_message]
+            + prior_user_messages
+            + current_turn_messages,
             config=config,
         )
         return {"messages": [response]}

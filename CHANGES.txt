@@ -47,3 +47,18 @@ Deployment fix: disabled Qdrant startup collection validation embedding call and
 - Policy lifecycle operations accept both metadata.document_id and legacy document_id layouts.
 - Explicit archived/processing/failed policies are excluded in either payload layout.
 - Points without a tenant ID are never returned, preserving tenant isolation.
+2026-08-16
+- Prevent archived/deleted policy documents from being used as fresh knowledge-base evidence.
+- Policy retrieval now requires an explicit active status, including for legacy payload layouts.
+- Existing sessions no longer feed previous assistant answers/tool outputs back to the LLM as authoritative context.
+- Recent user questions are retained for conversational continuity, while current-turn tool messages remain available.
+- Archived documents can remain visible in historical chat UI, but cannot be cited or reused as current KB evidence.
+
+2026-08-16 - Non-blocking policy indexing lifecycle
+- Policy uploads now return immediately with status `indexing` instead of waiting for embeddings/vector writes to finish.
+- New uploads are indexed in small Qdrant batches and Mongo tracks `total_chunks`, `indexed_chunks`, and `progress`.
+- A document cannot become `active` until every chunk has been successfully indexed.
+- The previous active version remains searchable while a replacement version is indexing.
+- Failed/partially indexed uploads are deleted from Qdrant and marked `failed` in Mongo.
+- Qdrant retrieval continues to require explicit `policy_status=active`, so indexing/archived/failed vectors are never used as current KB evidence.
+- Admin document library now polls indexing progress and displays `indexed / total` chunks plus a progress bar.

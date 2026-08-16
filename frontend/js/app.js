@@ -1270,9 +1270,10 @@ function showUserModal() {
     applyDocumentFilters();
     const active = allPolicyDocuments.filter(d => d.status === "active").length;
     const archived = allPolicyDocuments.filter(d => d.status === "archived").length;
+    const indexing = allPolicyDocuments.filter(d => d.status === "indexing" || d.status === "processing").length;
     const failed = allPolicyDocuments.filter(d => d.status === "failed").length;
     const summary = $("documentSummary");
-    if (summary) summary.textContent = `${allPolicyDocuments.length} total · ${active} active · ${archived} archived${failed ? ` · ${failed} failed` : ""}`;
+    if (summary) summary.textContent = `${allPolicyDocuments.length} total · ${active} active · ${archived} archived${indexing ? ` · ${indexing} indexing` : ""}${failed ? ` · ${failed} failed` : ""}`;
   }
 
   function applyDocumentFilters() {
@@ -1294,22 +1295,31 @@ function showUserModal() {
     body.innerHTML = documents.map(doc => {
       const uploaded = doc.uploaded_at ? new Date(doc.uploaded_at).toLocaleString([], {dateStyle: "medium", timeStyle: "short"}) : "—";
       const status = doc.status || "active";
-      const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
+      const statusLabel = status === "indexing" || status === "processing" ? "Indexing" : status.charAt(0).toUpperCase() + status.slice(1);
       const tenant = String(doc.tenant_id || "—");
       let actions = "";
-      if (status === "active") {
+      if (status === "active" || status === "indexing" || status === "processing") {
         actions += `<button class="table-action" data-document-archive="${escapeHtml(doc.id)}">Archive</button>`;
       } else if (status === "archived") {
         actions += `<button class="table-action" data-document-restore="${escapeHtml(doc.id)}">Restore</button>`;
       }
       actions += `<button class="table-action danger" data-document-delete="${escapeHtml(doc.id)}">Delete</button>`;
+      const indexedChunks = Number(doc.indexed_chunks ?? doc.chunks ?? 0);
+      const totalChunks = Number(doc.total_chunks ?? doc.chunks ?? 0);
+      const progress = Number(doc.progress ?? (totalChunks ? Math.round(indexedChunks * 100 / totalChunks) : 0));
+      const chunkLabel = status === "indexing" || status === "processing" || status === "archived"
+        ? `${indexedChunks} / ${totalChunks}`
+        : `${Number(doc.chunks ?? 0)}`;
+      const progressHtml = (status === "indexing" || status === "processing")
+        ? `<div class="document-progress"><div class="document-progress-bar" style="width:${Math.max(0, Math.min(100, progress))}%"></div></div><small class="document-progress-label">${progress}%</small>`
+        : "";
       return `<tr>
         <td><strong>${escapeHtml(doc.name || "Untitled document")}</strong><small class="document-file-meta">${formatFileSize(doc.size_bytes)}</small></td>
         <td><span class="version-pill">v${escapeHtml(doc.version ?? 1)}</span></td>
         <td>${escapeHtml(uploaded)}</td>
-        <td><span class="status-pill ${escapeHtml(status)}">${escapeHtml(statusLabel)}</span>${status === "failed" && doc.error ? `<small class="document-error">${escapeHtml(doc.error)}</small>` : ""}</td>
+        <td><span class="status-pill ${escapeHtml(status)}">${escapeHtml(statusLabel)}</span>${progressHtml}${status === "failed" && doc.error ? `<small class="document-error">${escapeHtml(doc.error)}</small>` : ""}</td>
         <td>${escapeHtml(doc.pages ?? 0)}</td>
-        <td>${escapeHtml(doc.chunks ?? 0)}</td>
+        <td>${escapeHtml(chunkLabel)}</td>
         <td><code title="${escapeHtml(tenant)}">${escapeHtml(tenant.length > 14 ? `${tenant.slice(0, 14)}…` : tenant)}</code></td>
         <td class="document-actions">${actions}</td>
       </tr>`;
@@ -1341,9 +1351,18 @@ function showUserModal() {
       : "Restore this document version? It will become the active version for this document name.";
     if (!window.confirm(message)) return;
     try {
+      document.querySelector(`[data-document-delete="${documentId}"]`)?.setAttribute("hidden", "true");
       const response = await authFetch(`${API}/api/documents/${encodeURIComponent(documentId)}/${verb}`, { method: "PATCH" });
       const result = await response.json();
       if (!response.ok) throw new Error(result.detail || `Unable to ${verb} policy`);
+
+      // Refresh the document library immediately after the lifecycle change.
+      // This updates status, available actions, chunk counts, and the summary
+      // without requiring the user to click the manual Refresh button.
+      await loadPolicyDocuments();
+
+      // Also refresh dashboard totals (knowledge chunks, etc.) so the rest of
+      // the admin screen stays in sync with the document library.
       await loadAdminDashboard();
     } catch (error) {
       const errorBox = $("adminError");
@@ -1412,22 +1431,73 @@ function showUserModal() {
   });
 
   uploadPoliciesButton?.addEventListener("click", () => adminFileInput?.click());
+  let documentPollingTimer = null;
+
+  async function pollDocumentIndexing(documentIds) {
+    if (documentPollingTimer) {
+      clearTimeout(documentPollingTimer);
+      documentPollingTimer = null;
+    }
+
+    const ids = new Set(documentIds || []);
+    if (!ids.size) return;
+
+    try {
+      const response = await authFetch(`${API}/api/documents`);
+      const documents = await response.json();
+      if (!response.ok) throw new Error(documents.detail || "Unable to check indexing progress");
+
+      renderDocuments(documents);
+      const tracked = documents.filter(doc => ids.has(doc.id));
+      const indexing = tracked.filter(doc => doc.status === "indexing" || doc.status === "processing");
+      const failed = tracked.filter(doc => doc.status === "failed");
+      const completed = tracked.filter(doc => doc.status === "active");
+
+      const status = $("uploadStatus");
+      if (status) {
+        if (indexing.length) {
+          const total = indexing.reduce((sum, doc) => sum + Number(doc.total_chunks || 0), 0);
+          const done = indexing.reduce((sum, doc) => sum + Number(doc.indexed_chunks || 0), 0);
+          const percent = total ? Math.round(done * 100 / total) : 0;
+          status.textContent = `Indexing… ${done} / ${total} chunks (${percent}%)`;
+        } else if (failed.length) {
+          status.textContent = `Indexing failed: ${failed.map(doc => doc.name).join(", ")}`;
+        } else if (completed.length === ids.size) {
+          const chunks = completed.reduce((sum, doc) => sum + Number(doc.chunks || 0), 0);
+          status.textContent = `Indexing complete: ${completed.length} document(s), ${chunks} chunks active.`;
+        }
+      }
+
+      await loadAdminDashboard();
+
+      if (indexing.length) {
+        documentPollingTimer = setTimeout(() => pollDocumentIndexing(documentIds), 1200);
+      }
+    } catch (error) {
+      const status = $("uploadStatus");
+      if (status) status.textContent = error.message;
+      documentPollingTimer = setTimeout(() => pollDocumentIndexing(documentIds), 2500);
+    }
+  }
+
   adminFileInput?.addEventListener("change", async () => {
     const files = Array.from(adminFileInput.files || []);
     if (!files.length) return;
-    const status = $("uploadStatus");
-    status.textContent = "Uploading and indexing…";
+    const uploadStatus = $("uploadStatus");
+    if (uploadStatus) uploadStatus.textContent = "Uploading…";
     const form = new FormData();
     files.forEach(file => form.append("files", file));
     try {
       const response = await authFetch(`${API}/api/documents/upload`, { method: "POST", body: form });
       const result = await response.json();
       if (!response.ok) throw new Error(result.detail || "Upload failed");
-      status.textContent = `Uploaded ${result.documents} document(s), ${result.chunks} chunks indexed.`;
       adminFileInput.value = "";
+      const ids = (result.results || []).filter(item => item.id).map(item => item.id);
+      if (uploadStatus) uploadStatus.textContent = `Upload accepted. Starting indexing for ${ids.length} document(s)…`;
       await loadAdminDashboard();
+      await pollDocumentIndexing(ids);
     } catch (error) {
-      status.textContent = error.message;
+      if (uploadStatus) uploadStatus.textContent = error.message;
     }
   });
 

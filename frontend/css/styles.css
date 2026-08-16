@@ -861,3 +861,8 @@ body.dark .thinking-label {
 .status-pill.failed{background:#fff4ed;color:#b54708}
 .document-error{display:block;color:#b42318;font-size:11px;max-width:180px;white-space:normal;margin-top:4px}
 @media(max-width:900px){.documents-card{grid-column:auto}.document-filters{flex-direction:column}.document-library-actions{justify-content:flex-start}}
+
+.status-pill.indexing,.status-pill.processing{background:#edf5ff;color:#1769e8}
+.document-progress{width:110px;height:6px;margin-top:6px;border-radius:999px;background:#e8eef7;overflow:hidden}
+.document-progress-bar{height:100%;border-radius:999px;background:#1769e8;transition:width .25s ease}
+.document-progress-label{display:block;color:#667085;font-size:10px;margin-top:2px}

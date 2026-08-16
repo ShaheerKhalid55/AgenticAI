@@ -64,6 +64,10 @@ def admin_overview(current_user: dict = Depends(require_role("company_admin"))):
     policy_documents = services.mongo.documents.count_documents({"tenant_id": tenant_id})
     active_documents = services.mongo.documents.count_documents({"tenant_id": tenant_id, "status": "active"})
     archived_documents = services.mongo.documents.count_documents({"tenant_id": tenant_id, "status": "archived"})
+    indexing_documents = services.mongo.documents.count_documents({"tenant_id": tenant_id, "status": "indexing"})
+    # Backward compatibility for uploads created before the indexing lifecycle.
+    processing_documents = services.mongo.documents.count_documents({"tenant_id": tenant_id, "status": "processing"})
+    indexing_documents += processing_documents
     failed_documents = services.mongo.documents.count_documents({"tenant_id": tenant_id, "status": "failed"})
 
     policy_chunks = 0
@@ -91,6 +95,7 @@ def admin_overview(current_user: dict = Depends(require_role("company_admin"))):
         "active_documents": active_documents,
         "archived_documents": archived_documents,
         "failed_documents": failed_documents,
+        "indexing_documents": indexing_documents,
     }
 
 
