@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="no-referrer">
+  <meta name="color-scheme" content="light dark">
+  <title>Accept Invitation · Nexa</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/css/styles.css?v=20260815-invitations1">
+</head>
+<body>
+  <main class="auth-screen">
+    <section class="auth-card" aria-labelledby="invitationTitle">
+      <div class="auth-logo">N</div>
+      <h1 id="invitationTitle">Accept your invitation</h1>
+      <p id="invitationStatus" class="auth-subtitle" role="status">Validating your invitation…</p>
+
+      <form id="acceptInvitationForm" class="hidden">
+        <p>You are joining <strong id="workspaceName">this workspace</strong>.</p>
+        <label for="newPassword">Create password</label>
+        <input id="newPassword" type="password" autocomplete="new-password" minlength="12" maxlength="128" required>
+        <small>At least 12 characters with uppercase, lowercase, a number and a special character.</small>
+        <label for="confirmPassword">Confirm password</label>
+        <input id="confirmPassword" type="password" autocomplete="new-password" minlength="12" maxlength="128" required>
+        <button id="acceptButton" type="submit" class="auth-primary">Accept invitation</button>
+        <div id="invitationError" class="auth-error hidden" role="alert"></div>
+      </form>
+
+      <div id="invitationComplete" class="hidden">
+        <p>Your account is active. You can now sign in to your workspace.</p>
+        <a class="auth-primary invitation-signin" href="/">Continue to sign in</a>
+      </div>
+    </section>
+  </main>
+  <script src="/js/accept-invitation.js?v=20260815-invitations1"></script>
+</body>
+</html>

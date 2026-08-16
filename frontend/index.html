@@ -3,22 +3,48 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Knowledge Assistant</title>
-  <link rel="stylesheet" href="/css/styles.css?v=20260813">
+  <meta name="color-scheme" content="light dark">
+  <title>Nexa</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/css/styles.css?v=20260816-admin-sections1">
 </head>
 <body>
 
   <div id="authScreen" class="auth-screen">
+    <section class="auth-showcase" aria-label="About Nexa">
+      <div class="auth-showcase-inner">
+        <div class="auth-brand">
+          <div class="nexa-mark" aria-hidden="true"><span>N</span></div>
+          <span>Nexa</span>
+        </div>
+        <div class="auth-showcase-copy">
+          <span class="eyebrow light">Workspace intelligence</span>
+          <h2>Turn your organisation’s knowledge into clear, grounded answers.</h2>
+          <p>A secure AI workspace for conversations, connected knowledge and source-backed guidance.</p>
+        </div>
+        <div class="auth-proof-grid" aria-hidden="true">
+          <div><span class="proof-icon">01</span><strong>Grounded</strong><small>Answers connected to your sources</small></div>
+          <div><span class="proof-icon">02</span><strong>Contextual</strong><small>Conversation and long-term memory</small></div>
+          <div><span class="proof-icon">03</span><strong>Configurable</strong><small>Built around your workspace</small></div>
+        </div>
+        <p class="auth-showcase-foot">Private workspace access · Role-based controls</p>
+      </div>
+    </section>
+
     <div class="auth-card">
-      <div class="auth-logo">HR</div>
-      <h1>Knowledge Assistant</h1>
-      <p class="auth-subtitle">Sign in to your company workspace</p>
+      <div class="auth-card-brand">
+        <div class="nexa-mark compact" aria-hidden="true"><span>N</span></div>
+        <span>Nexa</span>
+      </div>
 
       <div id="loginView">
+        <span class="eyebrow">Welcome back</span>
+        <h1>Sign in to your workspace</h1>
+        <p class="auth-subtitle">Access your assistant, conversations and connected knowledge.</p>
         <form id="loginForm">
-          <label>Email</label>
+          <label for="loginEmail">Email</label>
           <input id="loginEmail" type="email" autocomplete="email" required placeholder="you@company.com">
-          <label>Password</label>
+          <label for="loginPassword">Password</label>
           <input id="loginPassword" type="password" autocomplete="current-password" required placeholder="••••••••">
           <button type="submit" class="auth-primary">Sign in</button>
           <div id="loginError" class="auth-error hidden"></div>
@@ -27,14 +53,17 @@
       </div>
 
       <div id="registerView" class="hidden">
+        <span class="eyebrow">Get started</span>
+        <h1>Create your Nexa workspace</h1>
+        <p class="auth-subtitle">Set up your organisation and administrator account.</p>
         <form id="registerForm">
-          <label>Company name</label>
+          <label for="registerCompany">Company name</label>
           <input id="registerCompany" type="text" required placeholder="Acme Corporation">
-          <label>Your name</label>
+          <label for="registerName">Your name</label>
           <input id="registerName" type="text" required placeholder="Jane Smith">
-          <label>Work email</label>
+          <label for="registerEmail">Work email</label>
           <input id="registerEmail" type="email" required placeholder="jane@company.com">
-          <label>Password</label>
+          <label for="registerPassword">Password</label>
           <input id="registerPassword" type="password" minlength="8" required placeholder="At least 8 characters">
           <button type="submit" class="auth-primary">Create workspace</button>
           <div id="registerError" class="auth-error hidden"></div>
@@ -49,65 +78,96 @@
     <!-- Top navigation -->
     <header class="topbar">
       <div class="brand">
-        <div class="brand-mark">
-          <svg viewBox="0 0 64 64" aria-hidden="true">
-            <rect x="7" y="7" width="50" height="50" rx="14" fill="#edf5ff"/>
-            <path d="M20 49V24l6-5 6 5v25M32 49V16l7-5 7 5v34M14 49h36"
-                  fill="none" stroke="#1769e8" stroke-width="2.6" stroke-linejoin="round"/>
-            <path d="M24 30h4M24 36h4M36 23h5M36 29h5M36 35h5"
-                  stroke="#24a6a3" stroke-width="2.3" stroke-linecap="round"/>
-          </svg>
-        </div>
+        <div class="nexa-mark compact" aria-hidden="true"><span>N</span></div>
         <div>
-          <div class="brand-title">Knowledge Assistant</div>
-          <div class="brand-subtitle">Your AI guide</div>
+          <div class="brand-title">Nexa</div>
+          <div class="brand-subtitle">Knowledge workspace</div>
         </div>
       </div>
 
-      <!-- Status tabs -->
-      <!-- <div class="status-tabs">
-        <div class="status-card">
-          <span class="status-icon">
-            <svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM8 9h8M8 13h5"/></svg>
-          </span>
-          <span><b>Knowledge base</b><small><i></i> Connected</small></span>
+      <div class="workspace-header">
+        <div class="header-context">
+          <span class="eyebrow">Workspace assistant</span>
+          <div class="header-assistant-name" id="assistantBrandName">Knowledge Assistant</div>
+          <div class="header-assistant-description" id="assistantBrandDescription">Your AI guide to workspace knowledge</div>
         </div>
-        <div class="status-card">
-          <span class="status-icon">
-            <svg viewBox="0 0 24 24"><path d="M5 6h14v10H8l-4 4V6z"/></svg>
-          </span>
-          <span><b>Memory</b><small><i></i> Connected</small></span>
-        </div>
-        <div class="status-card">
-          <span class="status-icon">
-            <svg viewBox="0 0 24 24"><path d="M12 4 19 8v7l-7 5-7-5V8l7-4zM9 12h6M12 9v6"/></svg>
-          </span>
-          <span><b>Long-term memory</b><small><i></i> Connected</small></span>
-        </div>
-        <div class="status-card">
-          <span class="status-icon">
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M4 12h16M12 4a13 13 0 0 1 0 16M12 4a13 13 0 0 0 0 16"/></svg>
-          </span>
-          <span><b>Web fetch (MCP)</b><small><strong>1 tool</strong></small></span>
-        </div>
-      </div> -->
 
-      <div class="top-user"><span id="companyName">Company</span><button id="logoutButton" class="logout-button" type="button">Sign out</button></div>
+        <div class="top-user">
+          <div class="account-menu" id="accountMenu">
+          <button
+            class="top-user-chip account-menu-trigger"
+            id="accountMenuButton"
+            type="button"
+            aria-label="Open workspace and account menu"
+            aria-haspopup="menu"
+            aria-expanded="false"
+            aria-controls="accountMenuPanel"
+          >
+            <span class="avatar chip-avatar" id="userAvatar" aria-hidden="true">··<span class="online"></span></span>
+            <span class="top-user-name">
+              <b id="companyName">Company</b>
+              <span id="employeeId">—</span>
+            </span>
+            <svg class="account-menu-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg>
+          </button>
+
+          <div class="account-menu-panel hidden" id="accountMenuPanel" role="menu">
+            <div class="account-menu-summary">
+              <strong id="accountMenuCompany">Workspace account</strong>
+              <span id="accountMenuEmail">—</span>
+            </div>
+
+            <button
+              class="theme-button account-menu-action"
+              id="themeButton"
+              type="button"
+              role="menuitem"
+              aria-label="Toggle theme"
+              title="Toggle light/dark mode"
+            >
+              <span class="account-menu-action-icon" aria-hidden="true">
+                <svg class="sun-icon" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="4"></circle>
+                  <path d="M12 2v2"></path>
+                  <path d="M12 20v2"></path>
+                  <path d="m4.93 4.93 1.41 1.41"></path>
+                  <path d="m17.66 17.66 1.41 1.41"></path>
+                  <path d="M2 12h2"></path>
+                  <path d="M20 12h2"></path>
+                  <path d="m6.34 17.66-1.41 1.41"></path>
+                  <path d="m19.07 4.93-1.41 1.41"></path>
+                </svg>
+                <svg class="moon-icon" viewBox="0 0 24 24">
+                  <path d="M21 12.8A8.5 8.5 0 1 1 11.2 3 6.7 6.7 0 0 0 21 12.8Z"></path>
+                </svg>
+              </span>
+              <span class="theme-button-label">Theme</span>
+            </button>
+
+            <button id="logoutButton" class="logout-button account-menu-action" type="button" role="menuitem">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5H5v14h5M14 8l4 4-4 4M8 12h10"/></svg>
+              <span>Sign out</span>
+            </button>
+          </div>
+          </div>
+        </div>
+      </div>
     </header>
 
     <div class="layout">
 
       <!-- Sidebar -->
       <aside class="sidebar">
+        <div class="sidebar-section-label">Workspace</div>
         <button class="new-chat" id="newChat">
-          <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
           New chat
         </button>
 
         <nav class="sidebar-nav" aria-label="Application navigation">
           <button id="assistantNavButton" class="sidebar-nav-button active" type="button">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4V5z"/><path d="M8 9h8M8 12h5"/></svg>
-            <span>Knowledge Assistant</span>
+            <span>AI Assistant</span>
           </button>
           <button id="adminNavButton" class="sidebar-nav-button admin-nav-button hidden" type="button">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V9l8-5 8 5v11H4z"/><path d="M9 20v-6h6v6M8 10h1M12 10h1M16 10h1"/></svg>
@@ -115,148 +175,108 @@
           </button>
         </nav>
 
-        <!-- <button class="upload-docs" id="uploadDocuments">
-          <svg viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></svg>
-          Upload documents
-        </button> -->
         <input id="fileInput" type="file" accept=".pdf" multiple hidden>
 
         <div class="recent-heading">
           <strong>Recent chats</strong>
           <div>
-            <button aria-label="Search">
-              <svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
+            <button id="sessionSearchButton" type="button" aria-label="Search recent chats" aria-controls="sessionSearchPanel" aria-expanded="false">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
             </button>
-            <button aria-label="Filter">
-              <svg viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+            <button type="button" aria-label="Filter">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
             </button>
           </div>
         </div>
 
+        <div id="sessionSearchPanel" class="recent-search hidden" role="search">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
+          <input id="sessionSearchInput" type="search" maxlength="120" autocomplete="off" placeholder="Search chat titles..." aria-label="Search chat titles">
+          <button id="sessionSearchClear" class="hidden" type="button" aria-label="Clear chat search">×</button>
+          <button id="sessionSearchClose" type="button" aria-label="Close chat search">Cancel</button>
+          <span id="sessionSearchStatus" class="visually-hidden" aria-live="polite"></span>
+        </div>
+
         <div class="recent-chats" id="sessions"></div>
-
-        <!-- <div class="employee">
-          <div class="avatar employee-avatar">SK<span class="online"></span></div>
-          <div class="employee-copy">
-            <b>Employee</b>
-            <span id="employeeId">employee-2f1a3b</span>
-          </div>
-          <button class="chevron">⌄</button>
-          <button
-  class="theme-button"
-  id="themeButton"
-  type="button"
-  aria-label="Toggle theme"
-  title="Toggle light/dark mode"
->
-  <svg
-    class="sun-icon"
-    viewBox="0 0 24 24"
-  >
-    <circle
-      cx="12"
-      cy="12"
-      r="4"
-    ></circle>
-
-    <path d="M12 2v2"></path>
-    <path d="M12 20v2"></path>
-
-    <path
-      d="m4.93 4.93 1.41 1.41"
-    ></path>
-
-    <path
-      d="m17.66 17.66 1.41 1.41"
-    ></path>
-
-    <path d="M2 12h2"></path>
-    <path d="M20 12h2"></path>
-
-    <path
-      d="m6.34 17.66-1.41 1.41"
-    ></path>
-
-    <path
-      d="m19.07 4.93-1.41 1.41"
-    ></path>
-  </svg>
-
-  <svg
-    class="moon-icon"
-    viewBox="0 0 24 24"
-  >
-    <path
-      d="M21 12.8A8.5 8.5 0 1 1 11.2 3
-         6.7 6.7 0 0 0 21 12.8Z"
-    ></path>
-  </svg>
-</button>
-        </div> -->
       </aside>
 
       <!-- Main -->
       <main class="main">
         <div class="hero">
-          <div class="hero-logo">
-            <svg viewBox="0 0 64 64" aria-hidden="true">
-              <rect x="6" y="6" width="52" height="52" rx="26" fill="#edf5ff"/>
-              <path d="M19 50V25l6-5 6 5v25M31 50V16l7-5 7 5v34M13 50h38"
-                    fill="none" stroke="#1769e8" stroke-width="2.7" stroke-linejoin="round"/>
-              <path d="M23 31h4M23 37h4M35 23h5M35 29h5M35 35h5"
-                    stroke="#24a6a3" stroke-width="2.2" stroke-linecap="round"/>
-            </svg>
+          <div class="hero-conversation-state" aria-hidden="true"><i></i><span>Current conversation</span></div>
+          <div class="hero-copy">
+            <span class="eyebrow">AI Assistant</span>
+            <h1 id="assistantName">Knowledge Assistant</h1>
+            <p id="assistantDescription">Ask about your workspace knowledge — answers include source citations.</p>
+            <div class="hero-ready"><i></i><span>Ready to help with your workspace knowledge</span></div>
           </div>
-          <div>
-            <h1>Knowledge Assistant</h1>
-            <p>Ask anything — answers use your company documents when relevant and can also use general AI knowledge.</p>
-          </div>
-        </div>
-
-        <!-- In-page capability cards -->
-        <div class="capabilities">
-          <div class="capability">
-            <div class="capability-icon books">▤</div>
-            <div><b>Knowledge base</b><span><i></i> Connected</span></div>
-          </div>
-          <div class="capability">
-            <div class="capability-icon memory">☁</div>
-            <div><b>Conversation memory</b><span><i></i> Connected</span></div>
-          </div>
-          <div class="capability">
-            <div class="capability-icon brain">✣</div>
-            <div><b>Long-term memory</b><span><i></i> Connected</span></div>
-          </div>
-          <div class="capability">
-            <div class="capability-icon globe">◎</div>
-            <div><b>Web fetch (MCP)</b><span>1 tool available</span></div>
-          </div>
-          <div class="capability">
-            <div class="capability-icon mic">♩</div>
-            <div><b>Voice mode</b><span>Text only</span></div>
+          <div class="hero-visual" aria-hidden="true">
+            <div class="hero-orbit orbit-one"></div>
+            <div class="hero-orbit orbit-two"></div>
+            <div class="nexa-mark hero-mark"><span>N</span></div>
           </div>
         </div>
 
-        <section class="chat" id="chat"></section>
-
-        <div id="working" class="working hidden">Working on it...</div>
-
-        <form class="composer" id="chatForm">
-          <textarea id="message" rows="1" placeholder="Ask a question about company policies..."></textarea>
-          <div class="composer-actions">
-            <!-- <button type="button" id="attachButton" class="icon-button" title="Attach document">
-              <svg viewBox="0 0 24 24"><path d="m20 11.5-8.3 8.3a5 5 0 0 1-7.1-7.1l8.6-8.6a3.5 3.5 0 0 1 5 5l-8.7 8.7a2 2 0 0 1-2.8-2.8l8-8"/></svg>
-            </button> -->
-            <button type="button" id="micButton" class="icon-button" title="Voice input">
-              <svg viewBox="0 0 24 24"><rect x="8" y="3" width="8" height="12" rx="4"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"/></svg>
-            </button>
-            <button type="submit" class="send-button" title="Send">
-              <svg viewBox="0 0 24 24"><path d="M12 19V5M6.5 10.5 12 5l5.5 5.5"/></svg>
-            </button>
+        <section class="capabilities-section" aria-label="Connected assistant capabilities">
+          <div class="capabilities-heading">
+            <span>Connected capabilities</span>
+            <span class="live-label"><i></i>Live</span>
           </div>
-        </form>
+          <div class="capabilities">
+            <div class="capability">
+              <div class="capability-icon books" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H10v16H5.5A1.5 1.5 0 0 1 4 18.5v-13zM14 4h4.5A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5H14V4z"/></svg>
+              </div>
+              <div><b>Knowledge base</b><span><i></i>Connected</span></div>
+            </div>
+            <div class="capability">
+              <div class="capability-icon memory" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M7 18a4 4 0 0 1-.6-7.96A5.5 5.5 0 0 1 17.4 9.5 3.75 3.75 0 0 1 17 18H7z"/></svg>
+              </div>
+              <div><b>Conversation memory</b><span><i></i>Connected</span></div>
+            </div>
+            <div class="capability">
+              <div class="capability-icon brain" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M12 5.5a2.5 2.5 0 0 0-5 .3A2.6 2.6 0 0 0 5 8.3a2.6 2.6 0 0 0 .6 4.2A2.7 2.7 0 0 0 9 16.9a2.4 2.4 0 0 0 3-.4V5.5zM12 5.5a2.5 2.5 0 0 1 5 .3 2.6 2.6 0 0 1 2 2.5 2.6 2.6 0 0 1-.6 4.2 2.7 2.7 0 0 1-3.4 4.4 2.4 2.4 0 0 1-3-.4"/></svg>
+              </div>
+              <div><b>Long-term memory</b><span><i></i>Connected</span></div>
+            </div>
+            <div class="capability">
+              <div class="capability-icon globe" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5a13 13 0 0 1 0 17M12 3.5a13 13 0 0 0 0 17"/></svg>
+              </div>
+              <div><b>Web fetch (MCP)</b><span>1 tool available</span></div>
+            </div>
+            <div class="capability">
+              <div class="capability-icon mic" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="10" rx="3"/><path d="M6 11a6 6 0 0 0 12 0M12 17v3"/></svg>
+              </div>
+              <div><b>Voice mode</b><span>Text only</span></div>
+            </div>
+          </div>
+        </section>
 
-        <div class="disclaimer">AI-generated responses may contain mistakes. Please verify important information.</div>
+        <section class="chat" id="chat" aria-label="Conversation"></section>
+
+        <div class="composer-dock">
+          <div id="starterQuestions" class="starter-questions hidden" aria-label="Suggested questions"></div>
+
+          <div id="working" class="working hidden">Working on it...</div>
+
+          <form class="composer" id="chatForm">
+            <textarea id="message" rows="1" placeholder="Ask Nexa anything..."></textarea>
+            <div class="composer-actions">
+              <button type="button" id="micButton" class="icon-button" title="Voice input" aria-label="Voice input">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="3" width="8" height="12" rx="4"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"/></svg>
+              </button>
+              <button type="submit" class="send-button" title="Send" aria-label="Send message">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M6.5 10.5 12 5l5.5 5.5"/></svg>
+              </button>
+            </div>
+          </form>
+
+          <div class="disclaimer">AI-generated responses may contain mistakes. Please verify important information.</div>
+        </div>
       </main>
     </div>
   </div>
@@ -274,92 +294,208 @@
 
       <div id="adminError" class="admin-error hidden"></div>
 
-      <div class="admin-stats">
-        <div class="stat-card"><span>Employees</span><strong id="statEmployees">—</strong><small>Company employees</small></div>
-        <div class="stat-card"><span>Total users</span><strong id="statUsers">—</strong><small>All workspace users</small></div>
-        <div class="stat-card"><span>Knowledge chunks</span><strong id="statPolicies">—</strong><small>Indexed knowledge</small></div>
-        <div class="stat-card"><span>Conversations</span><strong id="statConversations">—</strong><small>Workspace chats</small></div>
+      <div class="admin-layout">
+        <nav class="admin-section-nav" aria-label="Admin Dashboard sections" role="tablist" aria-orientation="vertical">
+          <p class="admin-section-nav-label">Workspace settings</p>
+          <button id="adminSectionOverview" class="admin-section-tab active" type="button" role="tab" aria-selected="true" aria-controls="adminOverviewPanel" data-admin-section-target="overview">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>
+            <span><strong>Overview</strong><small>Workspace health</small></span>
+          </button>
+          <button id="adminSectionAssistant" class="admin-section-tab" type="button" role="tab" aria-selected="false" aria-controls="adminAssistantPanel" data-admin-section-target="assistant" tabindex="-1">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.2 3.8L17 8l-3.8 1.2L12 13l-1.2-3.8L7 8l3.8-1.2L12 3Z"/><path d="M18.5 14l.7 2.3 2.3.7-2.3.7-.7 2.3-.7-2.3-2.3-.7 2.3-.7.7-2.3Z"/><path d="M5.5 13l.7 2.3 2.3.7-2.3.7L5.5 19l-.7-2.3-2.3-.7 2.3-.7.7-2.3Z"/></svg>
+            <span><strong>Assistant</strong><small>Identity and behaviour</small></span>
+          </button>
+          <button id="adminSectionUsers" class="admin-section-tab" type="button" role="tab" aria-selected="false" aria-controls="adminUsersPanel" data-admin-section-target="users" tabindex="-1">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M16 11h6"/></svg>
+            <span><strong>Users</strong><small>Access and roles</small></span>
+          </button>
+          <button id="adminSectionKnowledge" class="admin-section-tab" type="button" role="tab" aria-selected="false" aria-controls="adminKnowledgePanel" data-admin-section-target="knowledge" tabindex="-1">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/><path d="M8 7h8M8 11h6"/></svg>
+            <span><strong>Knowledge Base</strong><small>Sources and indexing</small></span>
+          </button>
+        </nav>
+
+        <main class="admin-section-content">
+          <section id="adminOverviewPanel" class="admin-section-panel" role="tabpanel" aria-labelledby="adminSectionOverview" data-admin-panel="overview">
+            <header class="admin-section-heading">
+              <div><span class="admin-section-eyebrow">Overview</span><h2>Workspace at a glance</h2><p>Monitor usage and confirm the workspace details connected to Nexa.</p></div>
+            </header>
+
+            <div class="admin-stats">
+              <div class="stat-card"><span>Members</span><strong id="statEmployees">—</strong><small>Workspace members</small></div>
+              <div class="stat-card"><span>Total users</span><strong id="statUsers">—</strong><small>All workspace users</small></div>
+              <div class="stat-card"><span>Knowledge chunks</span><strong id="statPolicies">—</strong><small>Indexed knowledge</small></div>
+              <div class="stat-card"><span>Conversations</span><strong id="statConversations">—</strong><small>Workspace chats</small></div>
+            </div>
+
+            <section class="admin-card overview-workspace-card">
+              <div class="admin-card-heading"><div><h2>Workspace</h2><p>Identity and operational status for the current workspace.</p></div></div>
+              <div class="workspace-overview-grid">
+                <div class="workspace-detail"><span>Company</span><strong id="workspaceName">—</strong></div>
+                <div class="workspace-detail"><span>Status</span><strong id="workspaceStatus">—</strong></div>
+                <div class="workspace-detail workspace-id-detail"><span>Workspace ID</span><code id="workspaceId">—</code></div>
+              </div>
+            </section>
+          </section>
+
+          <section id="adminAssistantPanel" class="admin-section-panel hidden" role="tabpanel" aria-labelledby="adminSectionAssistant" data-admin-panel="assistant" tabindex="0">
+            <header class="admin-section-heading">
+              <div><span class="admin-section-eyebrow">Assistant</span><h2>Configure Nexa</h2><p>Manage the assistant identity, instructions, tools, memory and citation behaviour.</p></div>
+            </header>
+
+            <section class="admin-card assistant-config-card">
+              <div class="admin-card-heading">
+                <div><h2>Assistant Configuration</h2><p>Control the assistant's identity and runtime behavior for this workspace.</p></div>
+                <span id="assistantConfigSaved" class="config-save-status" role="status"></span>
+              </div>
+              <form id="assistantConfigForm" class="assistant-config-form">
+                <fieldset>
+                  <legend>Assistant</legend>
+                  <div class="config-grid">
+                    <label>Name<input id="configAssistantName" required maxlength="120"></label>
+                    <label>Status<select id="configAssistantStatus"><option value="active">Active</option><option value="draft">Draft</option><option value="inactive">Inactive</option></select></label>
+                    <label class="config-wide">Description<textarea id="configAssistantDescription" rows="2" maxlength="500"></textarea></label>
+                    <label class="config-wide">Welcome message<textarea id="configWelcomeMessage" rows="2" maxlength="2000"></textarea></label>
+                    <label>Chat placeholder<input id="configPlaceholder" maxlength="240"></label>
+                    <label>Icon/avatar reference<input id="configIcon" maxlength="500" placeholder="URL, asset path, or icon key"></label>
+                  </div>
+                </fieldset>
+
+                <fieldset>
+                  <legend>Knowledge &amp; Instructions</legend>
+                  <label>Knowledge base ID<input id="configKnowledgeBase" maxlength="120" placeholder="default"></label>
+                  <label>System instructions<textarea id="configSystemInstructions" rows="7" maxlength="12000" placeholder="Define the assistant's role, domain, and response behavior."></textarea></label>
+                </fieldset>
+
+                <fieldset>
+                  <legend>Starter Questions</legend>
+                  <div id="configStarterList" class="config-starter-list"></div>
+                  <div class="config-starter-add">
+                    <input id="configStarterInput" maxlength="300" placeholder="Add a suggested question">
+                    <button id="configStarterAdd" class="admin-secondary" type="button">Add question</button>
+                  </div>
+                </fieldset>
+
+                <fieldset>
+                  <legend>Tools</legend>
+                  <p class="config-help">Only enabled and available tools are exposed to the assistant runtime.</p>
+                  <div id="configTools" class="config-option-list">Loading tools…</div>
+                </fieldset>
+
+                <div class="config-two-column">
+                  <fieldset>
+                    <legend>Memory</legend>
+                    <label class="config-check"><input id="configConversationMemory" type="checkbox"> Conversation memory</label>
+                    <label class="config-check"><input id="configLongTermMemory" type="checkbox"> Long-term memory</label>
+                    <label class="config-check"><input id="configSavePreferences" type="checkbox"> Save useful preferences</label>
+                  </fieldset>
+
+                  <fieldset>
+                    <legend>Citations</legend>
+                    <label class="config-check"><input id="configCitationsEnabled" type="checkbox"> Citations enabled</label>
+                    <label class="config-check"><input id="configCitationsRequired" type="checkbox"> Require citations for sourced answers</label>
+                    <label class="config-check"><input id="configCitationDocument" type="checkbox"> Display document name</label>
+                    <label class="config-check"><input id="configCitationPage" type="checkbox"> Display page number</label>
+                    <label class="config-check"><input id="configCitationChunk" type="checkbox"> Display chunk reference</label>
+                  </fieldset>
+                </div>
+
+                <div class="config-actions">
+                  <button class="admin-primary" type="submit">Save assistant configuration</button>
+                </div>
+              </form>
+            </section>
+          </section>
+
+          <section id="adminUsersPanel" class="admin-section-panel hidden" role="tabpanel" aria-labelledby="adminSectionUsers" data-admin-panel="users" tabindex="0">
+            <header class="admin-section-heading admin-section-heading-with-action">
+              <div><span class="admin-section-eyebrow">Users</span><h2>Workspace access</h2><p>Invite people and manage their existing roles and account status.</p></div>
+              <button id="addUserButton" class="admin-primary" type="button">+ Add user</button>
+            </header>
+            <section class="admin-card users-card">
+              <div class="admin-card-heading"><div><h2>All users</h2><p>People with access to this company workspace.</p></div></div>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Created</th><th></th></tr></thead>
+                  <tbody id="usersTableBody"><tr><td colspan="6" class="empty-table">Loading users…</td></tr></tbody>
+                </table>
+              </div>
+            </section>
+          </section>
+
+          <section id="adminKnowledgePanel" class="admin-section-panel hidden" role="tabpanel" aria-labelledby="adminSectionKnowledge" data-admin-panel="knowledge" tabindex="0">
+            <header class="admin-section-heading">
+              <div><span class="admin-section-eyebrow">Knowledge Base</span><h2>Sources and indexing</h2><p>Upload, review and manage the documents Nexa can use for grounded answers.</p></div>
+            </header>
+
+            <section class="admin-card knowledge-upload-card">
+              <div class="knowledge-upload-summary">
+                <div class="knowledge-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg></div>
+                <div><span>Current Knowledge Base</span><strong id="workspaceKnowledge">—</strong><small>Available to this workspace only</small></div>
+              </div>
+              <div class="admin-upload">
+                <div><h3>Upload knowledge sources</h3><p>PDF files are indexed only for this workspace.</p></div>
+                <input id="adminFileInput" type="file" accept=".pdf" multiple hidden>
+                <button id="uploadPoliciesButton" class="admin-secondary" type="button">Upload PDFs</button>
+                <div id="uploadStatus" class="upload-status" role="status"></div>
+              </div>
+            </section>
+
+            <section class="admin-card documents-card">
+              <div class="admin-card-heading">
+                <div><h2>Document Library</h2><p>Manage source versions, publishing status, and ownership for this workspace.</p></div>
+                <div class="document-library-actions"><span id="documentSummary" class="document-summary">Loading documents…</span><button id="refreshDocuments" class="admin-secondary" type="button">↻ Refresh</button></div>
+              </div>
+              <div class="document-filters">
+                <input id="documentSearch" type="search" placeholder="Search documents…" aria-label="Search documents">
+                <select id="documentStatusFilter" aria-label="Filter policy status">
+                  <option value="all">All statuses</option>
+                  <option value="active">Active</option>
+                  <option value="archived">Archived</option>
+                  <option value="failed">Failed</option>
+                </select>
+              </div>
+              <div class="table-wrap">
+                <table class="documents-table">
+                  <thead><tr><th>Document</th><th>Version</th><th>Uploaded</th><th>Status</th><th>Pages</th><th>Chunks</th><th>Tenant</th><th>Actions</th></tr></thead>
+                  <tbody id="documentsTableBody"><tr><td colspan="8" class="empty-table">Loading document library…</td></tr></tbody>
+                </table>
+              </div>
+            </section>
+          </section>
+        </main>
       </div>
-
-      <div class="admin-grid">
-        <section class="admin-card users-card">
-          <div class="admin-card-heading">
-            <div><h2>Users</h2><p>Manage people in this company workspace.</p></div>
-            <button id="addUserButton" class="admin-primary" type="button">+ Add user</button>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Created</th><th></th></tr></thead>
-              <tbody id="usersTableBody"><tr><td colspan="6" class="empty-table">Loading users…</td></tr></tbody>
-            </table>
-          </div>
-        </section>
-
-        <section class="admin-card workspace-card">
-          <div class="admin-card-heading"><div><h2>Workspace</h2><p>Company information and knowledge management.</p></div></div>
-          <div class="workspace-detail"><span>Company</span><strong id="workspaceName">—</strong></div>
-          <div class="workspace-detail"><span>Status</span><strong id="workspaceStatus">—</strong></div>
-          <div class="workspace-detail"><span>Workspace ID</span><code id="workspaceId">—</code></div>
-          <div class="workspace-detail"><span>Knowledge base</span><strong id="workspaceKnowledge">—</strong></div>
-          <div class="admin-upload">
-            <h3>Upload Files For Knowledge Base</h3>
-            <p>PDF files are indexed only for this company.</p>
-            <input id="adminFileInput" type="file" accept=".pdf" multiple hidden>
-            <button id="uploadPoliciesButton" class="admin-secondary" type="button">Upload Files</button>
-            <div id="uploadStatus" class="upload-status"></div>
-          </div>
-        </section>
-      </div>
-
-      <section class="admin-card documents-card">
-        <div class="admin-card-heading">
-          <div>
-            <h2>Document Library</h2>
-            <p>Manage document versions, publishing status, and knowledge sources for this workspace.</p>
-          </div>
-          <div class="document-library-actions">
-            <span id="documentSummary" class="document-summary">Loading documents…</span>
-            <button id="refreshDocuments" class="admin-secondary" type="button">↻ Refresh</button>
-          </div>
-        </div>
-        <div class="document-filters">
-          <input id="documentSearch" type="search" placeholder="Search documents…" aria-label="Search documents">
-          <select id="documentStatusFilter" aria-label="Filter document status">
-            <option value="all">All statuses</option>
-            <option value="active">Active</option>
-            <option value="indexing">Indexing</option>
-            <option value="archived">Archived</option>
-            <option value="failed">Failed</option>
-          </select>
-        </div>
-        <div class="table-wrap">
-          <table class="documents-table">
-            <thead>
-              <tr><th>Document</th><th>Version</th><th>Uploaded</th><th>Status</th><th>Pages</th><th>Chunks</th><th>Tenant</th><th>Actions</th></tr>
-            </thead>
-            <tbody id="documentsTableBody"><tr><td colspan="8" class="empty-table">Loading policy library…</td></tr></tbody>
-          </table>
-        </div>
-      </section>
     </div>
   </section>
+
+  <div id="sessionDeleteModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="sessionDeleteTitle" aria-describedby="sessionDeleteDescription">
+    <div class="modal-card session-delete-card">
+      <h2 id="sessionDeleteTitle">Delete this chat?</h2>
+      <p id="sessionDeleteDescription">This conversation will be permanently deleted.</p>
+      <div id="sessionDeleteError" class="auth-error hidden" role="alert"></div>
+      <div class="modal-actions">
+        <button id="cancelSessionDelete" class="admin-secondary" type="button">Cancel</button>
+        <button id="confirmSessionDelete" class="admin-primary session-delete-confirm" type="button">Delete</button>
+      </div>
+    </div>
+  </div>
 
   <div id="userModal" class="modal hidden">
     <div class="modal-card">
       <button id="closeUserModal" class="modal-close" type="button" aria-label="Close dialog">×</button>
       <h2>Add workspace user</h2>
-      <p>Create an employee or another company administrator.</p>
+      <p>Invite an employee or another company administrator. They will create their own password.</p>
       <form id="adminUserForm">
-        <label>Full name</label><input id="adminUserName" required minlength="2" maxlength="120">
-        <label>Email</label><input id="adminUserEmail" type="email" required>
-        <label>Temporary password</label><input id="adminUserPassword" type="password" required minlength="8">
-        <label>Role</label><select id="adminUserRole"><option value="employee">Employee</option><option value="company_admin">Company admin</option></select>
+        <label for="adminUserName">Full name</label><input id="adminUserName" required minlength="2" maxlength="120">
+        <label for="adminUserEmail">Email</label><input id="adminUserEmail" type="email" required>
+        <label for="adminUserRole">Role</label><select id="adminUserRole"><option value="employee">Employee</option><option value="company_admin">Company admin</option></select>
         <div id="userFormError" class="auth-error hidden"></div>
-        <div class="modal-actions"><button id="cancelUserModal" class="admin-secondary" type="button">Cancel</button><button class="admin-primary" type="submit">Create user</button></div>
+        <div class="modal-actions"><button id="cancelUserModal" class="admin-secondary" type="button">Cancel</button><button class="admin-primary" type="submit">Send invitation</button></div>
       </form>
     </div>
   </div>
 
-  <script src="/js/app.js?v=20260816-lifecycle-refresh1"></script>
+  <script src="/js/markdown.js?v=20260816-markdown1"></script>
+  <script src="/js/app.js?v=20260816-admin-sections1"></script>
 </body>
 </html>

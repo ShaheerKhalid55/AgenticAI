@@ -2,11 +2,18 @@ import uuid
 from datetime import datetime, timezone
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, model_validator
 
-from ..auth.security import create_access_token, get_current_user, hash_password, verify_password
+from ..auth.security import (
+    create_access_token,
+    get_current_user,
+    hash_password,
+    password_requirement_error,
+    verify_password,
+)
+from ..services.invitations import InvitationError
 
 router = APIRouter(prefix="/api/auth", tags=["authentication"])
 
@@ -25,6 +32,26 @@ class UserResponse(BaseModel):
     full_name: str
     email: str
     role: str
+
+
+class InvitationTokenRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    token: str = Field(min_length=40, max_length=256)
+
+
+class AcceptInvitationRequest(InvitationTokenRequest):
+    password: str = Field(min_length=12, max_length=128)
+    password_confirmation: str = Field(min_length=12, max_length=128)
+
+    @model_validator(mode="after")
+    def validate_passwords(self):
+        if self.password != self.password_confirmation:
+            raise ValueError("Passwords do not match")
+        requirement_error = password_requirement_error(self.password)
+        if requirement_error:
+            raise ValueError(requirement_error)
+        return self
 
 
 def _public_user(user: dict, company: dict) -> UserResponse:
@@ -71,6 +98,7 @@ def register(request: RegisterRequest):
     services.mongo.companies.insert_one(company)
     try:
         services.mongo.users.insert_one(user)
+        services.mongo.get_assistant(tenant_id)
     except Exception:
         services.mongo.companies.delete_one({"id": tenant_id})
         raise
@@ -108,6 +136,40 @@ def login(form: Annotated[OAuth2PasswordRequestForm, Depends()]):
         role=user["role"],
     )
     return {"access_token": token, "token_type": "bearer", "user": _public_user(user, company).model_dump()}
+
+
+def _invitation_http_error(exc: InvitationError) -> HTTPException:
+    status_code = {
+        "invalid": status.HTTP_400_BAD_REQUEST,
+        "expired": status.HTTP_410_GONE,
+        "revoked": status.HTTP_410_GONE,
+        "already_used": status.HTTP_410_GONE,
+    }.get(exc.code, status.HTTP_409_CONFLICT)
+    return HTTPException(status_code, detail={"code": exc.code, "message": exc.message})
+
+
+@router.post("/invitations/validate")
+def validate_invitation(request: InvitationTokenRequest, response: Response):
+    from ..main import services
+
+    response.headers["Cache-Control"] = "no-store"
+    response.headers["Referrer-Policy"] = "no-referrer"
+    try:
+        return services.invitations.validate(request.token)
+    except InvitationError as exc:
+        raise _invitation_http_error(exc) from exc
+
+
+@router.post("/invitations/accept")
+def accept_invitation(request: AcceptInvitationRequest, response: Response):
+    from ..main import services
+
+    response.headers["Cache-Control"] = "no-store"
+    response.headers["Referrer-Policy"] = "no-referrer"
+    try:
+        return services.invitations.accept(request.token, request.password)
+    except InvitationError as exc:
+        raise _invitation_http_error(exc) from exc
 
 
 @router.get("/me", response_model=UserResponse)
