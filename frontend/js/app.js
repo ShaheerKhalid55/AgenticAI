@@ -1298,12 +1298,14 @@ function showUserModal() {
       const statusLabel = status === "indexing" || status === "processing" ? "Indexing" : status.charAt(0).toUpperCase() + status.slice(1);
       const tenant = String(doc.tenant_id || "—");
       let actions = "";
-      if (status === "active" || status === "indexing" || status === "processing") {
+      if (status === "active" || status === "processing") {
         actions += `<button class="table-action" data-document-archive="${escapeHtml(doc.id)}">Archive</button>`;
       } else if (status === "archived") {
         actions += `<button class="table-action" data-document-restore="${escapeHtml(doc.id)}">Restore</button>`;
       }
-      actions += `<button class="table-action danger" data-document-delete="${escapeHtml(doc.id)}">Delete</button>`;
+      if(status === "active"){
+        actions += `<button class="table-action danger" data-document-delete="${escapeHtml(doc.id)}">Delete</button>`;
+      }
       const indexedChunks = Number(doc.indexed_chunks ?? doc.chunks ?? 0);
       const totalChunks = Number(doc.total_chunks ?? doc.chunks ?? 0);
       const progress = Number(doc.progress ?? (totalChunks ? Math.round(indexedChunks * 100 / totalChunks) : 0));
