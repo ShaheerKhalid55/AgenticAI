@@ -1,3 +1,4 @@
+import re
 import sys
 from typing import Annotated, Sequence, Any
 
@@ -83,13 +84,17 @@ def build_system_prompt(assistant: dict) -> SystemMessage:
             )
 
     memory = assistant.get("memory_settings") or {}
-    if memory.get("long_term_memory", True) and memory.get("save_personal_preferences", True):
+    if memory.get("long_term_memory", True):
         sections.append(
-            "Use memory tools only for relevant durable, non-sensitive user information. "
-            "Do not store source-document content as personal memory."
+            "LONG-TERM MEMORY: A fresh MEMORY CONTEXT block is injected before you answer each turn. "
+            "Treat matching memory facts as user-specific context, not company-document evidence. "
+            "Do not claim memory facts came from uploaded documents."
         )
-    elif memory.get("long_term_memory", True):
-        sections.append("You may search long-term memory when useful, but do not save new memories.")
+        if memory.get("save_personal_preferences", True):
+            sections.append(
+                "Save relevant durable, non-sensitive user facts/preferences when explicitly stated. "
+                "Do not store source-document content as personal memory."
+            )
 
     if "web_fetch" in set(assistant.get("enabled_tools") or []):
         sections.append("Use the fetch tool for user-provided URLs when appropriate and clearly identify fetched web information.")
@@ -224,6 +229,68 @@ class AgentService:
             kwargs["store"] = self.memory_store
         self.graph = workflow.compile(**kwargs)
 
+    def _memory_namespace(self, config: RunnableConfig) -> tuple[str, ...]:
+        values = config.get("configurable", {})
+        return (
+            "tenants",
+            str(values.get("tenant_id", "")),
+            "users",
+            str(values.get("user_id", "")),
+        )
+
+    def _save_explicit_personal_fact(self, config: RunnableConfig, text: str) -> None:
+        """Persist only explicitly stated, non-sensitive personal facts."""
+        if not self.memory_store or not text:
+            return
+        assistant = config.get("configurable", {}).get("assistant_config") or {}
+        memory = assistant.get("memory_settings") or {}
+        if not memory.get("long_term_memory", True) or not memory.get("save_personal_preferences", True):
+            return
+        namespace = self._memory_namespace(config)
+        if not all(namespace):
+            return
+        match = re.search(r"\bmy name is\s+([A-Za-z][A-Za-z .'-]{0,80}?)(?:[.!?,]|$)", text, re.IGNORECASE)
+        if match:
+            name = match.group(1).strip().strip(" .,!?")
+            if name:
+                self.memory_store.put(
+                    namespace,
+                    "personal_name",
+                    {
+                        "type": "personal_fact",
+                        "text": f"The user's name is {name}.",
+                    },
+                    index=["type", "text"],
+                )
+
+    def _retrieve_memory_context(self, config: RunnableConfig, query: str) -> str:
+        """Always search tenant/user long-term memory before the model answers."""
+        if not self.memory_store or not query:
+            return "NO_LONG_TERM_MEMORY: No personal memory is available."
+        assistant = config.get("configurable", {}).get("assistant_config") or {}
+        memory = assistant.get("memory_settings") or {}
+        if not memory.get("long_term_memory", True):
+            return "LONG_TERM_MEMORY_DISABLED: Long-term memory is disabled for this assistant."
+        namespace = self._memory_namespace(config)
+        if not all(namespace):
+            return "NO_LONG_TERM_MEMORY: User memory namespace is unavailable."
+        try:
+            items = self.memory_store.search(namespace, query=query, limit=8)
+        except Exception as exc:
+            return f"NO_LONG_TERM_MEMORY: Memory retrieval failed ({exc})."
+        if not items:
+            return "NO_LONG_TERM_MEMORY: No relevant personal memories were found."
+        lines = []
+        for idx, item in enumerate(items, 1):
+            value = getattr(item, "value", None)
+            if isinstance(value, dict):
+                mem_type = value.get("type", "personal_context")
+                mem_text = value.get("text") or value.get("content") or str(value)
+                lines.append(f"[Memory {idx}] Type: {mem_type}\n{mem_text}")
+            else:
+                lines.append(f"[Memory {idx}] {value}")
+        return "\n\n".join(lines)
+
     def agent_node(self, state: AgentState, config: RunnableConfig):
         retriever = config.get("configurable", {}).get("retriever_instance")
         assistant = config.get("configurable", {}).get("assistant_config") or {}
@@ -234,6 +301,11 @@ class AgentService:
 
         user_message = next((m for m in reversed(state["messages"]) if isinstance(m, HumanMessage)), None)
         query = extract_text(getattr(user_message, "content", None)) if user_message else ""
+
+        # Persist explicit personal facts before retrieval so they are available
+        # immediately and in future sessions.
+        self._save_explicit_personal_fact(config, query)
+        memory_context = self._retrieve_memory_context(config, query)
 
         # Fresh retrieval is performed before the model sees the question. This
         # keeps archived/indexing documents out of current-turn evidence.
@@ -276,6 +348,13 @@ class AgentService:
                 + "\n\nUse this evidence first. If it does not actually answer the question, use general model knowledge only with the exact required disclaimer."
             )
         )
+        memory_message = SystemMessage(
+            content=(
+                "LONG-TERM MEMORY CONTEXT — retrieved for this user before the current answer:\n"
+                + memory_context
+                + "\n\nUse this only for personal/user-specific context. It is separate from company-document evidence."
+            )
+        )
         conversation_context = SystemMessage(
             content=(
                 "CONVERSATION CONTEXT RULES:\n"
@@ -310,7 +389,7 @@ class AgentService:
             temperature=0.3,
         )
         response = model.bind_tools(active_tools).invoke(
-            [build_system_prompt(assistant), conversation_context, kb_message]
+            [build_system_prompt(assistant), memory_message, conversation_context, kb_message]
             + prior_user_messages
             + current_turn_messages,
             config=config,

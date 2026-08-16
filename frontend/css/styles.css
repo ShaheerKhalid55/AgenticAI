@@ -3522,3 +3522,456 @@ body.dark .account-menu .theme-button:hover { color: var(--text); }
   .knowledge-upload-card .upload-status { grid-column: auto; }
   .document-library-actions { width: 100%; justify-content: space-between; }
 }
+
+
+/* =========================================================
+   Nexa Knowledge Assistant - 100% desktop layout refinement
+   Append after the existing stylesheet.
+   Target: 1920x1080 / browser zoom 100%
+   ========================================================= */
+
+:root {
+  --nexa-sidebar-width: 284px;
+  --nexa-page-max: 1320px;
+  --nexa-content-gutter: clamp(24px, 2.5vw, 48px);
+  --nexa-header-height: 74px;
+  --nexa-radius: 18px;
+}
+
+/* Prevent browser/device defaults from producing a stretched canvas */
+html,
+body {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+/* Main application shell */
+.app-shell {
+  width: 100%;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* Fixed-width desktop sidebar like the reference image */
+.sidebar {
+  width: var(--nexa-sidebar-width);
+  min-width: var(--nexa-sidebar-width);
+  flex: 0 0 var(--nexa-sidebar-width);
+  box-sizing: border-box;
+}
+
+/* Main area fills the remaining viewport, but its CONTENT does not stretch */
+main.main {
+  min-width: 0;
+  width: auto;
+  flex: 1 1 auto;
+  box-sizing: border-box;
+  padding-inline: var(--nexa-content-gutter);
+}
+
+/*
+ * The reference UI uses a centered reading/product column.
+ * Apply the max-width to the common direct children of main.
+ */
+main.main > *,
+main.main .main-inner,
+main.main .content,
+main.main .content-inner,
+main.main .page-content {
+  width: 100%;
+  max-width: var(--nexa-page-max);
+  margin-inline: auto;
+  box-sizing: border-box;
+}
+
+/* Header */
+.topbar,
+.app-header,
+.main-header {
+  min-height: var(--nexa-header-height);
+  box-sizing: border-box;
+}
+
+/* Hero / welcome card */
+.hero,
+.assistant-hero,
+.welcome-card {
+  width: 100%;
+  max-width: var(--nexa-page-max);
+  margin-inline: auto;
+  box-sizing: border-box;
+  border-radius: var(--nexa-radius);
+}
+
+/* Connected-capabilities strip */
+.capabilities,
+.capability-strip,
+.connected-capabilities {
+  width: 100%;
+  max-width: var(--nexa-page-max);
+  margin-inline: auto;
+  box-sizing: border-box;
+}
+
+/* Chat area */
+#chat,
+.chat {
+  width: 100%;
+  max-width: var(--nexa-page-max);
+  margin-inline: auto;
+  box-sizing: border-box;
+}
+
+/*
+ * Keep the conversation readable instead of allowing message bubbles
+ * to grow to the entire 1600px+ desktop width.
+ */
+.message {
+  max-width: min(900px, 88%);
+}
+
+.message.assistant .bubble {
+  max-width: min(900px, 88%);
+}
+
+.message.user .bubble {
+  max-width: min(720px, 80%);
+}
+
+/* Thinking/status bubble */
+#thinkingMessage,
+.thinking-message {
+  width: auto;
+  max-width: min(900px, 88%);
+}
+
+/* Composer stays centered and capped */
+.composer,
+.chat-composer,
+#chatForm {
+  width: 100%;
+  max-width: var(--nexa-page-max);
+  margin-inline: auto;
+  box-sizing: border-box;
+}
+
+/* Keep the input from becoming excessively wide */
+.composer-inner,
+.chat-input-container {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Recent chats */
+#sessions,
+.sessions {
+  overflow-x: hidden;
+}
+
+/* Admin dashboard uses the same comfortable reading width */
+#adminDashboard,
+.admin-dashboard {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#adminDashboard > *,
+.admin-dashboard > *,
+.admin-dashboard .admin-content {
+  max-width: var(--nexa-page-max);
+  margin-inline: auto;
+  box-sizing: border-box;
+}
+
+/* Tables should scroll rather than stretch the entire application */
+.table-wrap,
+.admin-table-wrap,
+.document-table-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* Avoid giant cards at desktop sizes */
+.admin-card,
+.dashboard-card,
+.workspace-card {
+  box-sizing: border-box;
+}
+
+/* ---------------------------------------------------------
+   Responsive
+   --------------------------------------------------------- */
+
+@media (max-width: 1400px) {
+  :root {
+    --nexa-sidebar-width: 264px;
+    --nexa-page-max: 1180px;
+  }
+
+  main.main {
+    padding-inline: 28px;
+  }
+
+  .message,
+  .message.assistant .bubble {
+    max-width: 86%;
+  }
+}
+
+@media (max-width: 1100px) {
+  :root {
+    --nexa-sidebar-width: 240px;
+    --nexa-page-max: 100%;
+  }
+
+  main.main {
+    padding-inline: 20px;
+  }
+}
+
+@media (max-width: 800px) {
+  :root {
+    --nexa-sidebar-width: 100%;
+  }
+
+  .app-shell {
+    display: block;
+  }
+
+  .sidebar {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+  }
+
+  main.main {
+    width: 100%;
+    padding-inline: 14px;
+  }
+
+  .message,
+  .message.assistant .bubble,
+  .message.user .bubble {
+    max-width: 94%;
+  }
+}
+
+/* =========================================================
+   Nexa — FINAL 100% DESKTOP WIDTH / ANTI-STRETCH OVERRIDE
+   Reference: 1920x1080 desktop at 100% browser zoom.
+   Keeps the visual column centered and prevents the assistant
+   from stretching across the full remaining viewport.
+   ========================================================= */
+
+:root {
+  --nexa-sidebar-width: 284px;
+  --nexa-page-max: 1180px;
+  --nexa-content-gutter: 24px;
+  --nexa-header-height: 74px;
+}
+
+/* Desktop shell */
+html,
+body {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+.app-shell,
+.layout {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Keep sidebar stable at desktop */
+.sidebar {
+  width: var(--nexa-sidebar-width);
+  min-width: var(--nexa-sidebar-width);
+  max-width: var(--nexa-sidebar-width);
+  flex: 0 0 var(--nexa-sidebar-width);
+}
+
+/* Main fills available space, while all visible content is capped */
+main.main {
+  min-width: 0;
+  width: auto;
+  flex: 1 1 auto;
+  padding-inline: 24px;
+  overflow-x: hidden;
+}
+
+/* Shared centered product/reading column */
+main.main > *,
+main.main .main-inner,
+main.main .content,
+main.main .content-inner,
+main.main .page-content,
+.hero,
+.capabilities-section,
+.chat,
+.composer-dock,
+.working,
+.starter-questions {
+  width: min(var(--nexa-page-max), 100%);
+  max-width: var(--nexa-page-max);
+  margin-inline: auto;
+  box-sizing: border-box;
+}
+
+/* Hero */
+.hero {
+  width: min(var(--nexa-page-max), 100%);
+  max-width: var(--nexa-page-max);
+}
+
+/* Capability strip */
+.capabilities-section {
+  width: min(var(--nexa-page-max), 100%);
+  max-width: var(--nexa-page-max);
+}
+
+/* Conversation area */
+.chat {
+  width: min(var(--nexa-page-max), 100%);
+  max-width: var(--nexa-page-max);
+  padding-inline: 0;
+}
+
+/* Readable message widths inside the capped column */
+.message {
+  width: 100%;
+  max-width: 900px;
+  margin-inline: auto;
+}
+
+.message.assistant .bubble {
+  max-width: 900px;
+}
+
+.message.user .bubble {
+  max-width: 680px;
+}
+
+/* Thinking/status bubble follows the same reading width */
+.thinking-message,
+#thinkingMessage {
+  width: 100%;
+  max-width: 900px;
+  margin-inline: auto;
+}
+
+/* Bottom composer should align exactly with the hero/chat column */
+.composer-dock {
+  width: min(var(--nexa-page-max), 100%);
+  max-width: var(--nexa-page-max);
+  padding-inline: 0;
+  margin-inline: auto;
+}
+
+.composer,
+.chat-composer,
+#chatForm {
+  width: 100%;
+  max-width: 1000px;
+  margin-inline: auto;
+}
+
+/* Keep the disclaimer aligned to the same visual column */
+.disclaimer {
+  width: min(var(--nexa-page-max), 100%);
+  max-width: var(--nexa-page-max);
+  margin-inline: auto;
+  box-sizing: border-box;
+}
+
+/* At normal desktop sizes, do not let the legacy 1000px composer
+   become wider than the visual reference. */
+@media (min-width: 1401px) {
+  .composer,
+  .chat-composer,
+  #chatForm {
+    max-width: 1000px;
+  }
+
+  .hero,
+  .capabilities-section,
+  .chat,
+  .composer-dock,
+  .disclaimer {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+/* Large laptop / smaller desktop */
+@media (max-width: 1400px) {
+  :root {
+    --nexa-sidebar-width: 264px;
+    --nexa-page-max: 1120px;
+  }
+
+  main.main {
+    padding-inline: 20px;
+  }
+}
+
+/* Tablet */
+@media (max-width: 1100px) {
+  :root {
+    --nexa-sidebar-width: 240px;
+    --nexa-page-max: 100%;
+  }
+
+  main.main {
+    padding-inline: 16px;
+  }
+
+  .message,
+  .thinking-message,
+  #thinkingMessage {
+    max-width: 94%;
+  }
+}
+
+/* Mobile keeps the existing responsive behavior */
+@media (max-width: 760px) {
+  :root {
+    --nexa-sidebar-width: 100%;
+  }
+
+  .sidebar {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+  }
+
+  main.main {
+    width: 100%;
+    padding-inline: 12px;
+  }
+
+  .hero,
+  .capabilities-section,
+  .chat,
+  .composer-dock,
+  .disclaimer {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .composer,
+  .chat-composer,
+  #chatForm {
+    max-width: 100%;
+  }
+}
